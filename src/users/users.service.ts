@@ -2,9 +2,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcrypt';
+import { Op } from 'sequelize';
 import { User } from './models/user.model';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FilterUserDto } from './dto/filter-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -13,8 +15,8 @@ export class UsersService {
     private userModel: typeof User,
   ) {}
 
+  // Criação de usuário com hash de senha
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // Criptografa a senha antes de salvar
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
@@ -23,57 +25,97 @@ export class UsersService {
       password_hash: hashedPassword,
     };
 
-    // Remove a senha do DTO para segurança
     delete userToCreate.password;
 
     const createdUser = await this.userModel.create(userToCreate);
-
-    // Remove o hash da senha da resposta
     const { password_hash, ...result } = createdUser.get({ plain: true });
     return result as User;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.findAll({
-        attributes: { exclude: ['password_hash'] } // Exclui o hash da lista
+  // NOVO MÉTODO findAll COM FILTROS E PAGINAÇÃO
+  async findAll(filterDto: FilterUserDto) {
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      email,
+      role,
+    } = filterDto;
+
+    const where: any = {};
+
+    if (name) {
+      where.name = { [Op.iLike]: `%${name}%` }; // busca case-insensitive
+    }
+    if (email) {
+      where.email = { [Op.iLike]: `%${email}%` };
+    }
+    if (role) {
+      where.role = role;
+    }
+
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await this.userModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      attributes: { exclude: ['password_hash'] },
     });
+
+    return {
+      data: rows,
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+    };
   }
 
+  // Buscar um usuário pelo ID (sem retornar o hash da senha)
   async findOne(id: string): Promise<User> {
     const user = await this.userModel.findByPk(id, {
-        attributes: { exclude: ['password_hash'] }
+      attributes: { exclude: ['password_hash'] },
     });
+
     if (!user) {
       throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
     }
+
     return user;
   }
 
-  // Implemente update() e remove() de forma similar...
-
-    /**
-   * NOVO MÉTODO: Busca um usuário pelo email, incluindo o hash da senha.
-   * Este método é utilizado internamente pelo AuthService para o processo de login.
-   * @param email O email do usuário a ser encontrado.
-   * @returns O usuário encontrado, incluindo o password_hash.
-   */
+  // Buscar um usuário pelo email (usado pelo AuthService)
   async findOneByEmail(email: string): Promise<User> {
     return this.userModel.findOne({
       where: { email },
     });
   }
 
+  // Atualizar usuário
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
-    // Adicionar lógica para hash de senha se a senha for atualizada
-    const [numberOfAffectedRows, [updatedUser]] = await this.userModel.update(
-      { ...updateUserDto },
-      { where: { id }, returning: true },
-    );
+
+    // Se senha for atualizada, re-hash
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      updateUserDto.password_hash = await bcrypt.hash(updateUserDto.password, salt);
+      delete updateUserDto.password;
+    }
+
+    const [affected, [updatedUser]] = await this.userModel.update(updateUserDto, {
+      where: { id },
+      returning: true,
+    });
+
+    if (affected === 0) {
+      throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
+    }
+
     const { password_hash, ...result } = updatedUser.get({ plain: true });
     return result as User;
   }
 
+  // Remover usuário
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await user.destroy();
