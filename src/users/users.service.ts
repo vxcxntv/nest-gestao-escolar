@@ -50,4 +50,32 @@ export class UsersService {
   }
 
   // Implemente update() e remove() de forma similar...
+
+    /**
+   * NOVO MÉTODO: Busca um usuário pelo email, incluindo o hash da senha.
+   * Este método é utilizado internamente pelo AuthService para o processo de login.
+   * @param email O email do usuário a ser encontrado.
+   * @returns O usuário encontrado, incluindo o password_hash.
+   */
+  async findOneByEmail(email: string): Promise<User> {
+    return this.userModel.findOne({
+      where: { email },
+    });
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    // Adicionar lógica para hash de senha se a senha for atualizada
+    const [numberOfAffectedRows, [updatedUser]] = await this.userModel.update(
+      { ...updateUserDto },
+      { where: { id }, returning: true },
+    );
+    const { password_hash, ...result } = updatedUser.get({ plain: true });
+    return result as User;
+  }
+
+  async remove(id: string): Promise<void> {
+    const user = await this.findOne(id);
+    await user.destroy();
+  }
 }

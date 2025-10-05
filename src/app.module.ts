@@ -3,6 +3,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersModule } from './users/users.module';
+import { SubjectsModule } from './subjects/subjects.module';
+import { AuthModule } from './auth/auth.module';
+import { AttendancesModule } from './attendances/attendances.module';
+import { GradesModule } from './grades/grades.module';
+import { ClassesModule } from './classes/classes.module';
+import { SubjectsModule } from './subjects/subjects.module';
 
 @Module({
   imports: [
@@ -20,6 +26,11 @@ import { UsersModule } from './users/users.module';
       synchronize: true, // Cria/atualiza as tabelas no banco. Use apenas em desenvolvimento!
     }),
     UsersModule,
+    SubjectsModule,
+    ClassesModule,
+    GradesModule,
+    AttendancesModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
