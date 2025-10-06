@@ -18,8 +18,8 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { UserRole } from './models/user.model';
 
 @ApiTags('Usuários') // Agrupa os endpoints no Swagger

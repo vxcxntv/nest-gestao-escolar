@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { AttendancesModule } from './attendances/attendances.module';
 import { GradesModule } from './grades/grades.module';
 import { ClassesModule } from './classes/classes.module';
-import { SubjectsModule } from './subjects/subjects.module';
 
 @Module({
   imports: [

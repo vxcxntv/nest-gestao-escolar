@@ -2,14 +2,13 @@
 import { BelongsToMany } from 'sequelize-typescript'; // Importe
 import { Subject } from 'src/subjects/models/subject.model'; // Importe
 import { ClassSubject } from './class-subject.model'; // Importe
-import { BelongsToMany } from 'sequelize-typescript';
 import { User } from 'src/users/models/user.model';
 import { Enrollment } from './enrollment.model';
 
 import {
   Table, Column, Model, DataType, ForeignKey, BelongsTo,
 } from 'sequelize-typescript';
-import { User } from 'src/users/models/user.model'; // Importe o modelo User
+
 
 @Table({ tableName: 'classes', timestamps: true })
 export class Class extends Model {
@@ -19,7 +18,7 @@ export class Class extends Model {
     primaryKey: true,
 
   })
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING,

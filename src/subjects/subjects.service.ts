@@ -17,7 +17,7 @@ export class SubjectsService {
    * @returns A disciplina criada.
    */
   async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
-    return this.subjectModel.create(createSubjectDto);
+    return this.subjectModel.create(createSubjectDto as any);
   }
 
   /**

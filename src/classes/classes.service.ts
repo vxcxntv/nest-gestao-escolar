@@ -19,7 +19,7 @@ export class ClassesService {
    * @returns A turma criada.
    */
   create(createClassDto: CreateClassDto): Promise<Class> {
-    return this.classModel.create(createClassDto);
+    return this.classModel.create(createClassDto as any);
   }
 
   /**

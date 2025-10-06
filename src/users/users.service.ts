@@ -86,9 +86,15 @@ export class UsersService {
 
   // Buscar um usuário pelo email (usado pelo AuthService)
   async findOneByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({
+    const user = await this.userModel.findOne({
       where: { email },
     });
+
+    if (!user) {
+      throw new NotFoundException(`Usuário com email ${email} não encontrado.`);
+    }
+
+    return user;
   }
 
   // Atualizar usuário
@@ -98,7 +104,7 @@ export class UsersService {
     // Se senha for atualizada, re-hash
     if (updateUserDto.password) {
       const salt = await bcrypt.genSalt();
-      updateUserDto.password_hash = await bcrypt.hash(updateUserDto.password, salt);
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
       delete updateUserDto.password;
     }
 

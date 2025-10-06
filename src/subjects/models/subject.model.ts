@@ -12,7 +12,7 @@ export class Subject extends Model {
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
   })
-  id: string;
+  declare id: string;
 
   @Column({
     type: DataType.STRING,
@@ -27,7 +27,6 @@ export class Subject extends Model {
   })
   description: string;
 
+  @BelongsToMany(() => Class, () => ClassSubject)
+  classes: Class[];
 }
-
-@BelongsToMany(() => Class, () => ClassSubject)
-classes: Class[];

@@ -9,5 +9,6 @@ import { User } from './models/user.model'; // Importe o modelo
   imports: [SequelizeModule.forFeature([User])], // Registre o modelo aqui
   controllers: [UsersController],
   providers: [UsersService],
+  exports: [UsersService],
 })
 export class UsersModule {}
