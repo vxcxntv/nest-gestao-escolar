@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { AttendancesModule } from './attendances/attendances.module';
 import { GradesModule } from './grades/grades.module';
 import { ClassesModule } from './classes/classes.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
+import { InvoicesModule } from './invoices/invoices.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ClassesModule } from './classes/classes.module';
     GradesModule,
     AttendancesModule,
     AuthModule,
+    AnnouncementsModule,
+    InvoicesModule,
   ],
   controllers: [],
   providers: [],
