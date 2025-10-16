@@ -1,7 +1,7 @@
 // src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { HttpException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
@@ -14,6 +14,7 @@ async function bootstrap() {
     transform: true, // converte tipos automaticamente (ex: string -> number)
   }));
 
+  //app.useGlobalFilters(new HttpExceptionFilter());
   // Configuração do Swagger
   const config = new DocumentBuilder()
     .setTitle('Plataforma de Gestão Escolar/Universitária API')
@@ -27,7 +28,7 @@ async function bootstrap() {
     .addTag('Usuários', 'CRUD e gestão de perfis (Admin, Professor, Aluno, Responsável)')
     .addTag('Classes', 'Gestão de turmas, matrículas e associações')
     .addTag('Disciplinas', 'Gestão de matérias e currículo')
-    .addTag('Notas', 'Lançamento e consulta de notas')
+    .addTag('Notas (Grades)', 'Lançamento e consulta de notas')
     .addTag('Frequência', 'Registro e consulta de presenças/faltas')
     .addTag('Avisos', 'Comunicação oficial da escola/universidade')
     .addTag('Faturas', 'Gestão de mensalidades e pagamentos')

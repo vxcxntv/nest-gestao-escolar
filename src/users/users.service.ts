@@ -25,7 +25,7 @@ export class UsersService {
       password_hash: hashedPassword,
     };
 
-    delete userToCreate.password;
+    delete (userToCreate as any).password;
 
     const createdUser = await this.userModel.create(userToCreate);
     const { password_hash, ...result } = createdUser.get({ plain: true });

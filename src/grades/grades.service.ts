@@ -4,6 +4,7 @@ import { Subject } from 'src/subjects/models/subject.model';
 import { User } from 'src/users/models/user.model';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { Grade } from './models/grade.model';
+import { UpdateGradeDto } from './dto/update-grade.dto';
 
 @Injectable()
 export class GradesService {
@@ -65,5 +66,17 @@ export class GradesService {
       throw new NotFoundException(`Nota com ID ${id} não encontrada.`);
     }
     return grade;
+  }
+
+  async update(id: string, updateGradeDto: UpdateGradeDto): Promise<Grade> {
+    const grade = await this.findOne(id);
+    await grade.update(updateGradeDto);
+    return this.findOne(id); // Retorna a nota atualizada com as associações
+  }
+
+  
+  async remove(id: string): Promise<void> {
+    const grade = await this.findOne(id);
+    await grade.destroy();
   }
 }

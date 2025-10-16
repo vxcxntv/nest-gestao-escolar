@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { Subject } from './models/subject.model';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { FilterSubjectDto } from './dto/filter-subject.dto'; // Importe o DTO de filtro
 
 @Injectable()
 export class SubjectsService {
@@ -13,26 +15,43 @@ export class SubjectsService {
 
   /**
    * Cria uma nova disciplina no banco de dados.
-   * @param createSubjectDto Dados para a criação da disciplina.
-   * @returns A disciplina criada.
    */
   async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
     return this.subjectModel.create(createSubjectDto as any);
   }
 
   /**
-   * Retorna uma lista com todas as disciplinas.
-   * @returns Um array de disciplinas.
+   * Retorna uma lista com todas as disciplinas, com suporte a filtros e paginação.
+   * Agora aceita o FilterSubjectDto.
    */
-  async findAll(): Promise<Subject[]> {
-    return this.subjectModel.findAll();
+  async findAll(filterDto: FilterSubjectDto) {
+    const { page = 1, limit = 10, name } = filterDto;
+    const where: any = {};
+
+    // Filtro por nome (busca parcial case-insensitive)
+    if (name) {
+      where.name = { [Op.iLike]: `%${name}%` };
+    }
+
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await this.subjectModel.findAndCountAll({
+      where,
+      limit,
+      offset,
+      order: [['name', 'ASC']],
+    });
+
+    return {
+      data: rows,
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+    };
   }
 
   /**
    * Busca uma disciplina específica pelo seu ID.
-   * @param id O ID da disciplina.
-   * @returns A disciplina encontrada.
-   * @throws NotFoundException se a disciplina não for encontrada.
    */
   async findOne(id: string): Promise<Subject> {
     const subject = await this.subjectModel.findByPk(id);
@@ -44,18 +63,17 @@ export class SubjectsService {
 
   /**
    * Atualiza os dados de uma disciplina existente.
-   * @param id O ID da disciplina a ser atualizada.
-   * @param updateSubjectDto Os novos dados para a disciplina.
-   * @returns A disciplina com os dados atualizados.
    */
-  async update(id: string, updateSubjectDto: UpdateSubjectDto): Promise<Subject> {
+  async update(
+    id: string,
+    updateSubjectDto: UpdateSubjectDto,
+  ): Promise<Subject> {
     const subject = await this.findOne(id);
     return subject.update(updateSubjectDto);
   }
 
   /**
    * Remove uma disciplina do banco de dados.
-   * @param id O ID da disciplina a ser removida.
    */
   async remove(id: string): Promise<void> {
     const subject = await this.findOne(id);

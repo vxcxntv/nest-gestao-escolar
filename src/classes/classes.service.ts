@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { User } from 'src/users/models/user.model';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { FilterClassDto } from './dto/filter-class.dto';
+import { Op } from 'sequelize';
 import { Class } from './models/class.model';
 import { Subject } from 'src/subjects/models/subject.model';
 
@@ -26,16 +28,44 @@ export class ClassesService {
    * Retorna uma lista com todas as turmas, incluindo os dados do professor de cada uma.
    * @returns Um array de turmas com seus respectivos professores.
    */
-  findAll(): Promise<Class[]> {
-    return this.classModel.findAll({
+  async findAll(filterDto: FilterClassDto) { // ASSINATURA CORRIGIDA
+    const { page = 1, limit = 10, name, academic_year, teacherId } = filterDto;
+    const where: any = {};
+
+    // 1. Lógica de Filtros
+    if (name) {
+      where.name = { [Op.iLike]: `%${name}%` }; // Busca parcial sem diferenciar maiúsculas/minúsculas
+    }
+    if (academic_year) {
+      where.academic_year = academic_year;
+    }
+    if (teacherId) {
+      where.teacherId = teacherId;
+    }
+
+    // 2. Paginação
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await this.classModel.findAndCountAll({
+      where,
+      limit,
+      offset,
       include: [
         {
           model: User,
-          as: 'teacher', // O alias é opcional aqui, mas bom para clareza
-          attributes: { exclude: ['password_hash'] }, // Nunca exponha a senha!
+          as: 'teacher',
+          attributes: { exclude: ['password_hash'] },
         },
       ],
+      order: [['academic_year', 'DESC'], ['name', 'ASC']],
     });
+
+    return {
+      data: rows,
+      total: count,
+      page,
+      totalPages: Math.ceil(count / limit),
+    };
   }
 
   /**
