@@ -2,8 +2,8 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Q
   ParseUUIDPipe, HttpCode, HttpStatus,} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags,} from '@nestjs/swagger';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { UserRole } from 'src/users/models/user.model';
 import { AnnouncementsService } from './announcements.service';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
