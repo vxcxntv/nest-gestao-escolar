@@ -10,6 +10,7 @@ import { GradesModule } from './grades/grades.module';
 import { ClassesModule } from './classes/classes.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { InvoicesModule } from './invoices/invoices.module';
+import { DashboardsModule } from './dashboards/dashboards.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { InvoicesModule } from './invoices/invoices.module';
     AuthModule,
     AnnouncementsModule,
     InvoicesModule,
+    DashboardsModule,
   ],
   controllers: [],
   providers: [],
