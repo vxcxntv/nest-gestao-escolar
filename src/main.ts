@@ -16,10 +16,23 @@ async function bootstrap() {
 
   // Configuração do Swagger
   const config = new DocumentBuilder()
-    .setTitle('API de Gestão Escolar')
-    .setDescription('Documentação completa da API para a plataforma de gestão escolar.')
+    .setTitle('Plataforma de Gestão Escolar/Universitária API')
+    .setDescription('Documentação completa para a API RESTful da plataforma de gestão, cobrindo módulos Acadêmicos, Financeiros e de Comunicação.')
     .setVersion('1.0')
-    .addBearerAuth() // Adiciona suporte a autenticação JWT
+    .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+        'access-token', // Nome de referência que usaremos para proteger as rotas
+    )
+    .addTag('Autenticação', 'Endpoints para login e gestão de tokens JWT')
+    .addTag('Usuários', 'CRUD e gestão de perfis (Admin, Professor, Aluno, Responsável)')
+    .addTag('Classes', 'Gestão de turmas, matrículas e associações')
+    .addTag('Disciplinas', 'Gestão de matérias e currículo')
+    .addTag('Notas', 'Lançamento e consulta de notas')
+    .addTag('Frequência', 'Registro e consulta de presenças/faltas')
+    .addTag('Avisos', 'Comunicação oficial da escola/universidade')
+    .addTag('Faturas', 'Gestão de mensalidades e pagamentos')
+    .addTag('Relatórios Acadêmicos', 'Agregação de dados para histórico e desempenho')
+    .addTag('Dashboards', 'Resumo de dados por perfil')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

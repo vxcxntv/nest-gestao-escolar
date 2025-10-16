@@ -81,15 +81,15 @@ export class InvoicesService {
       limit = 10,
       studentId,
       status,
-      dueDateStart,
-      dueDateEnd,
+      dueDateFrom,
+      dueDateTo,
     } = filterDto;
     const where: any = {};
 
     if (studentId) where.studentId = studentId;
     if (status) where.status = status;
-    if (dueDateStart && dueDateEnd) {
-      where.dueDate = { [Op.between]: [dueDateStart, dueDateEnd] };
+    if (dueDateFrom && dueDateTo) {
+      where.dueDate = { [Op.between]: [dueDateFrom, dueDateTo] };
     }
 
     const offset = (page - 1) * limit;

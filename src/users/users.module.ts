@@ -6,9 +6,12 @@ import { UsersController } from './users.controller';
 import { User } from './models/user.model'; // Importe o modelo
 
 @Module({
-  imports: [SequelizeModule.forFeature([User])], // Registre o modelo aqui
+  imports: [
+    SequelizeModule.forFeature([User]),
+    // Se UsersModule depender de outro módulo, use forwardRef aqui também
+  ],
   controllers: [UsersController],
   providers: [UsersService],
-  exports: [UsersService],
+  exports: [UsersService, SequelizeModule],
 })
 export class UsersModule {}
