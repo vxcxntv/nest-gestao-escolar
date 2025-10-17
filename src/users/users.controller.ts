@@ -24,6 +24,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
@@ -70,6 +71,28 @@ export class UsersController {
   getProfile(@Request() req) {
     // Note: req.user.userId é injetado pelo JwtStrategy
     return this.usersService.findOne(req.user.userId);
+  }
+
+  @Patch('me/password')
+  @ApiOperation({ summary: 'Alterar a senha do usuário logado' })
+  @ApiBody({
+    type: ChangePasswordDto,
+    description: 'Dados para alteração de senha.',
+  })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Senha alterada com sucesso',
+    schema: {
+      example: { message: 'Senha alterada com sucesso' }
+    }
+  })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Senha atual incorreta.' })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'As senhas não coincidem.' })
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Request() req
+  ) {
+    return this.usersService.changePassword(req.user.userId, changePasswordDto);
   }
 
   @Get(':id')

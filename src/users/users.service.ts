@@ -1,5 +1,4 @@
-// src/users/users.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -7,6 +6,7 @@ import { User } from './models/user.model';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -32,7 +32,7 @@ export class UsersService {
     return result as User;
   }
 
-  // NOVO MÉTODO findAll COM FILTROS E PAGINAÇÃO
+  // findAll COM FILTROS E PAGINAÇÃO
   async findAll(filterDto: FilterUserDto) {
     const {
       page = 1,
@@ -104,26 +104,72 @@ export class UsersService {
     // Se senha for atualizada, re-hash
     if (updateUserDto.password) {
       const salt = await bcrypt.genSalt();
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
-      delete updateUserDto.password;
+      const hashedPassword = await bcrypt.hash(updateUserDto.password, salt);
+      
+      const [affected, [updatedUser]] = await this.userModel.update(
+        { ...updateUserDto, password_hash: hashedPassword },
+        {
+          where: { id },
+          returning: true,
+        }
+      );
+
+      if (affected === 0) {
+        throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
+      }
+
+      const { password_hash, ...result } = updatedUser.get({ plain: true });
+      return result as User;
+    } else {
+      const [affected, [updatedUser]] = await this.userModel.update(updateUserDto, {
+        where: { id },
+        returning: true,
+      });
+
+      if (affected === 0) {
+        throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
+      }
+
+      const { password_hash, ...result } = updatedUser.get({ plain: true });
+      return result as User;
     }
-
-    const [affected, [updatedUser]] = await this.userModel.update(updateUserDto, {
-      where: { id },
-      returning: true,
-    });
-
-    if (affected === 0) {
-      throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
-    }
-
-    const { password_hash, ...result } = updatedUser.get({ plain: true });
-    return result as User;
   }
 
   // Remover usuário
   async remove(id: string): Promise<void> {
     const user = await this.findOne(id);
     await user.destroy();
+  }
+
+  // Alterar senha do usuário logado
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const user = await this.userModel.findByPk(userId);
+    
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    // Verificar se a senha atual está correta
+    const isCurrentPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword, 
+      user.password_hash
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Senha atual incorreta');
+    }
+
+    // Verificar se as novas senhas coincidem
+    if (changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword) {
+      throw new BadRequestException('A nova senha e a confirmação não coincidem');
+    }
+
+    // Criptografar a nova senha
+    const salt = await bcrypt.genSalt();
+    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, salt);
+
+    await user.update({ password_hash: hashedNewPassword });
+
+    return { message: 'Senha alterada com sucesso' };
   }
 }
