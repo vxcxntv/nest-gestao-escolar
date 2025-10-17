@@ -1,8 +1,9 @@
 // src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { HttpException, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,7 +15,9 @@ async function bootstrap() {
     transform: true, // converte tipos automaticamente (ex: string -> number)
   }));
 
-  //app.useGlobalFilters(new HttpExceptionFilter());
+  // Filtro global de exceções - AGORA ATIVADO
+  app.useGlobalFilters(new HttpExceptionFilter());
+
   // Configuração do Swagger
   const config = new DocumentBuilder()
     .setTitle('Plataforma de Gestão Escolar/Universitária API')
@@ -44,5 +47,6 @@ async function bootstrap() {
   await app.listen(3000);
   console.log(`🚀 Servidor rodando em http://localhost:3000`);
   console.log(`📘 Swagger disponível em http://localhost:3000/api-docs`);
+  console.log(`🔧 Filtro de exceções global ativado`);
 }
 bootstrap();

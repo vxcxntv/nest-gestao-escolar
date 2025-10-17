@@ -11,6 +11,7 @@ import { ClassesModule } from './classes/classes.module';
 import { AnnouncementsModule } from './announcements/announcements.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DashboardsModule } from './dashboards/dashboards.module';
     AnnouncementsModule,
     InvoicesModule,
     DashboardsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],
