@@ -1,54 +1,45 @@
-import { Controller, Post, Body, UseGuards, Request, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { UsersService } from 'src/users/users.service';
+import * as bcrypt from 'bcrypt';
 
-import { AuthService } from './auth.service';
-import { LoginRequestDto } from './dto/login-request.dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
+@Injectable()
+export class AuthService {
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-@ApiTags('Autenticação')
-@Controller('auth')
-export class AuthController {
-    constructor(private readonly authService: AuthService) {}
-
-    @Post('login')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Autenticar usuário e obter token JWT' })
-    @ApiBody({ type: LoginRequestDto, description: 'Credenciais (email e password) do usuário.' })
-    @ApiResponse({ status: 200, description: 'Login bem-sucedido. Retorna o token de acesso.', type: AuthResponseDto })
-    @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
-    @UseGuards(AuthGuard('local')) // O AuthGuard('local') é o que faz a validação da senha no AuthService
-    async login(@Body() loginRequestDto: LoginRequestDto, @Request() req) {
-        // Após a validação (AuthGuard('local')), o objeto do usuário é anexado ao req.user
-        return this.authService.login(req.user);
+  async validateUser(email: string, password: string): Promise<any> {
+    try {
+      const user = await this.usersService.findOneByEmail(email);
+      
+      if (user && await bcrypt.compare(password, user.password_hash)) {
+        const { password_hash, ...result } = user.get({ plain: true });
+        return result;
+      }
+      return null;
+    } catch (error) {
+      // Se o usuário não for encontrado, retorna null
+      return null;
     }
+  }
 
-    @Post('logout')
-    @UseGuards(AuthGuard('jwt'))
-    @ApiBearerAuth('access-token')
-    @ApiOperation({ summary: 'Fazer logout do usuário (invalidar token)' })
-    @ApiResponse({ 
-        status: 200, 
-        description: 'Logout realizado com sucesso',
-        schema: {
-            example: {
-                success: true,
-                message: 'Logout realizado com sucesso. Token deve ser descartado pelo cliente.'
-            }
-        }
-    })
-    @ApiResponse({ status: 401, description: 'Token JWT inválido ou ausente.' })
-    async logout(@Request() req) {
-        // Em uma implementação real, você poderia:
-        // 1. Adicionar o token a uma blacklist
-        // 2. Invalidar a sessão no banco de dados
-        // 3. Limpar cookies se estiver usando
-        
-        // Por enquanto, apenas retornamos sucesso
-        // O cliente deve remover o token do localStorage/sessionStorage
-        return {
-            success: true,
-            message: 'Logout realizado com sucesso. Token deve ser descartado pelo cliente.'
-        };
-    }
+  async login(user: any) {
+    const payload = { 
+      email: user.email, 
+      sub: user.id, 
+      role: user.role 
+    };
+    
+    return {
+      access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    };
+  }
 }
