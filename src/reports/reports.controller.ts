@@ -1,3 +1,4 @@
+// src/reports/reports.controller.ts
 import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -5,8 +6,13 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { ReportsService } from './reports.service';
+import { 
+  StudentHistoryResponse, 
+  ClassPerformanceResponse,
+  FinancialReportResponse 
+} from './dto/reports-response.dto';
 
-@ApiTags('Relatórios')
+@ApiTags('Relatórios Acadêmicos')
 @ApiBearerAuth()
 @Controller('reports')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -17,7 +23,11 @@ export class ReportsController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
   @ApiOperation({ summary: 'Gerar histórico completo do aluno' })
   @ApiParam({ name: 'studentId', description: 'ID do aluno' })
-  @ApiResponse({ status: 200, description: 'Histórico gerado com sucesso' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Histórico gerado com sucesso',
+    type: StudentHistoryResponse
+  })
   getStudentHistory(
     @Param('studentId') studentId: string,
     @Request() req
@@ -34,8 +44,24 @@ export class ReportsController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({ summary: 'Gerar relatório de desempenho da turma' })
   @ApiParam({ name: 'classId', description: 'ID da turma' })
-  @ApiResponse({ status: 200, description: 'Relatório de desempenho gerado com sucesso' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Relatório de desempenho gerado com sucesso',
+    type: ClassPerformanceResponse
+  })
   getClassPerformance(@Param('classId') classId: string) {
     return this.reportsService.getClassPerformance(classId);
+  }
+
+  @Get('financial/summary')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Gerar relatório financeiro resumido' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Relatório financeiro gerado com sucesso',
+    type: FinancialReportResponse
+  })
+  getFinancialReport() {
+    return this.reportsService.getFinancialReport();
   }
 }

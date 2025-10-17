@@ -1,3 +1,4 @@
+// src/reports/reports.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
@@ -6,6 +7,13 @@ import { Class } from 'src/classes/models/class.model';
 import { Grade } from 'src/grades/models/grade.model';
 import { Attendance } from 'src/attendances/models/attendance.model';
 import { Subject } from 'src/subjects/models/subject.model';
+import { Invoice } from 'src/invoices/models/invoice.model';
+import { InvoiceStatus } from 'src/invoices/models/invoice.model';
+import { 
+  StudentHistoryResponse, 
+  ClassPerformanceResponse,
+  FinancialReportResponse 
+} from './dto/reports-response.dto';
 
 @Injectable()
 export class ReportsService {
@@ -15,12 +23,17 @@ export class ReportsService {
     @InjectModel(Grade) private gradeModel: typeof Grade,
     @InjectModel(Attendance) private attendanceModel: typeof Attendance,
     @InjectModel(Subject) private subjectModel: typeof Subject,
+    @InjectModel(Invoice) private invoiceModel: typeof Invoice,
   ) {}
 
-  async getStudentHistory(studentId: string) {
+  async getStudentHistory(studentId: string): Promise<StudentHistoryResponse> {
     const student = await this.userModel.findByPk(studentId, {
       attributes: ['id', 'name', 'email']
     });
+
+    if (!student) {
+      throw new Error('Aluno não encontrado');
+    }
 
     const grades = await this.gradeModel.findAll({
       where: { studentId },
@@ -80,7 +93,7 @@ export class ReportsService {
     };
   }
 
-  async getClassPerformance(classId: string) {
+  async getClassPerformance(classId: string): Promise<ClassPerformanceResponse> {
     const classInstance = await this.classModel.findByPk(classId, {
       include: [
         { 
@@ -151,6 +164,40 @@ export class ReportsService {
         classAttendanceRate: Number(classAttendanceRate.toFixed(2))
       },
       students: performanceData
+    };
+  }
+
+  async getFinancialReport(): Promise<FinancialReportResponse> {
+    const allInvoices = await this.invoiceModel.findAll();
+
+    const totalRevenue = allInvoices
+      .filter(inv => inv.status === InvoiceStatus.PAID)
+      .reduce((sum, invoice) => sum + parseFloat(invoice.amount as any), 0);
+
+    const pendingInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.PENDING).length;
+    const paidInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.PAID).length;
+    const overdueInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.OVERDUE).length;
+
+    const totalInvoices = allInvoices.length;
+    const collectionRate = totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
+
+    // Simular dados mensais (em produção, você faria uma consulta agrupada por mês)
+    const monthlyData = [
+      {
+        month: '2024-01',
+        revenue: totalRevenue,
+        paidInvoices,
+        pendingInvoices
+      }
+    ];
+
+    return {
+      totalRevenue: Number(totalRevenue.toFixed(2)),
+      pendingInvoices,
+      paidInvoices,
+      overdueInvoices,
+      collectionRate: Number(collectionRate.toFixed(2)),
+      monthlyData
     };
   }
 }
