@@ -1,20 +1,22 @@
 import {
-  Body,
   Controller,
   Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseUUIDPipe,
   HttpCode,
   HttpStatus,
-  Param,
-  ParseUUIDPipe,
-  Patch,
-  Post,
-  Query,
-  Request,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -29,57 +31,29 @@ import { FilterInvoiceDto } from './dto/filter-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InvoicesService } from './invoices.service';
 
-@ApiTags('Financeiro - Faturas e Relatórios')
-@ApiBearerAuth() // Indica que todos os endpoints neste controller exigem um token.
-@UseGuards(AuthGuard('jwt'), RolesGuard) // Aplica os guards de autenticação e autorização globalmente.
-@Controller() // Usamos um controller sem rota base para gerir rotas variadas como '/invoices' e '/reports'.
+@ApiTags('Financeiro (Faturas e Relatórios)')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Controller() // Controller raiz (sem prefixo), pois as rotas usam prefixos customizados (/invoices, /reports)
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 
+  // --- CRUD BÁSICO ---
+
   @Post('invoices')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Cria uma nova fatura para um aluno' })
+  @ApiOperation({ summary: 'Cria uma fatura individual para um aluno.' })
+  @ApiBody({ type: CreateInvoiceDto })
   @ApiResponse({ status: 201, description: 'Fatura criada com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado.' })
   create(@Body() createInvoiceDto: CreateInvoiceDto) {
     return this.invoicesService.create(createInvoiceDto);
   }
 
-  @Post('invoices/batch')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Cria faturas em lote para uma turma' })
-  @ApiResponse({ status: 201, description: 'Faturas em lote criadas com sucesso.' })
-  createBatch(@Body() createBatchDto: CreateBatchInvoiceDto) {
-    return this.invoicesService.createBatch(createBatchDto);
-  }
-
-  @Get('invoices')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Lista todas as faturas com filtros e paginação' })
-  findAll(@Query() filterDto: FilterInvoiceDto) {
-    return this.invoicesService.findAll(filterDto);
-  }
-
-  @Get('students/:studentId/invoices')
-  @ApiOperation({ summary: 'Lista todas as faturas de um aluno específico' })
-  @ApiResponse({ status: 200, description: 'Lista de faturas do aluno.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado se o utilizador não for o próprio ou um admin.' })
-  findAllByStudent(
-    @Param('studentId', ParseUUIDPipe) studentId: string,
-    @Request() req,
-  ) {
-    return this.invoicesService.findAllByStudent(studentId, req.user);
-  }
-
-  @Get('invoices/:id')
-  @ApiOperation({ summary: 'Busca os detalhes de uma fatura por ID' })
-  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
-    return this.invoicesService.findOne(id, req.user);
-  }
-
   @Patch('invoices/:id')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Atualiza os dados de uma fatura' })
+  @ApiOperation({ summary: 'Atualiza os dados de uma fatura.' })
+  @ApiBody({ type: UpdateInvoiceDto })
+  @ApiResponse({ status: 200, description: 'Fatura atualizada com sucesso.' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateInvoiceDto: UpdateInvoiceDto,
@@ -87,27 +61,78 @@ export class InvoicesController {
     return this.invoicesService.update(id, updateInvoiceDto);
   }
 
-  @Post('invoices/:id/pay')
+  @Get('invoices')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Marca uma fatura como paga' })
+  @ApiOperation({
+    summary: 'ADMIN: Lista todas as faturas com filtros e paginação.',
+  })
+  @ApiQuery({ type: FilterInvoiceDto })
+  @ApiResponse({ status: 200, description: 'Lista de faturas retornada.' })
+  findAll(@Query() filterDto: FilterInvoiceDto) {
+    return this.invoicesService.findAll(filterDto);
+  }
+
+  @Get('invoices/:id')
+  @ApiOperation({
+    summary:
+      'Busca uma fatura por ID. Acessível por Admin, Aluno e Responsável (se for a própria fatura).',
+  })
+  @ApiResponse({ status: 200, description: 'Fatura encontrada.' })
+  findOne(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
+    return this.invoicesService.findOne(id, req.user);
+  }
+
+  @Get('students/:studentId/invoices')
+  @ApiOperation({
+    summary: 'Lista todas as faturas de um aluno. Acessível por Admin/Professor.',
+  })
+  @ApiResponse({ status: 200, description: 'Faturas do aluno listadas.' })
+  findAllByStudent(
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+    @Request() req,
+  ) {
+    return this.invoicesService.findAllByStudent(studentId, req.user);
+  }
+
+  // --- AÇÕES ESPECÍFICAS E LOTE ---
+
+  @Post('invoices/batch')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Cria faturas em lote para todos os alunos de uma turma.' })
+  @ApiBody({ type: CreateBatchInvoiceDto })
+  @ApiResponse({ status: 201, description: 'Faturas geradas em lote com sucesso.' })
+  createBatch(@Body() dto: CreateBatchInvoiceDto) {
+    return this.invoicesService.createBatch(dto);
+  }
+
+  @Post('invoices/:id/pay')
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Marca uma fatura como PAGA e define a data de pagamento.' })
+  @ApiResponse({ status: 200, description: 'Fatura marcada como paga.' })
   markAsPaid(@Param('id', ParseUUIDPipe) id: string) {
     return this.invoicesService.markAsPaid(id);
   }
 
   @Post('invoices/:id/cancel')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Cancela uma fatura' })
   @HttpCode(HttpStatus.OK)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Marca uma fatura como CANCELADA.' })
+  @ApiResponse({ status: 200, description: 'Fatura cancelada.' })
   cancel(@Param('id', ParseUUIDPipe) id: string) {
     return this.invoicesService.cancel(id);
   }
 
+  // --- RELATÓRIOS ---
+
   @Get('reports/financial/revenue')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Gera um relatório de faturamento por período' })
-  @ApiQuery({ name: 'startDate', required: true, example: '2025-01-01', description: 'Data de início (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: true, example: '2025-01-31', description: 'Data de fim (YYYY-MM-DD)' })
+  @ApiOperation({
+    summary: 'Relatório de Receita Total: Calcula o faturamento de faturas PAGAS em um período.',
+  })
+  @ApiQuery({ name: 'startDate', type: String, example: '2025-01-01' })
+  @ApiQuery({ name: 'endDate', type: String, example: '2025-12-31' })
+  @ApiResponse({ status: 200, description: 'Receita total calculada.' })
   getRevenueReport(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -117,7 +142,10 @@ export class InvoicesController {
 
   @Get('reports/financial/defaults')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '(Admin) Gera um relatório de inadimplentes (faturas vencidas)' })
+  @ApiOperation({
+    summary: 'Relatório de Inadimplentes: Lista faturas VENCIDAS e PENDENTES.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de faturas inadimplentes.' })
   getDefaultsReport() {
     return this.invoicesService.getDefaultsReport();
   }

@@ -23,8 +23,8 @@ export class CreateBatchInvoiceDto {
     description: 'Valor a ser cobrado de cada aluno.',
     example: 800.0,
   })
-  @IsNumber()
-  @Min(0)
+  @IsNumber({maxDecimalPlaces: 2})
+  @Min(0.01)
   amount: number;
 
   @ApiProperty({

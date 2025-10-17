@@ -32,9 +32,9 @@ async function bootstrap() {
     .addTag('Classes', 'Gestão de turmas, matrículas e associações')
     .addTag('Disciplinas', 'Gestão de matérias e currículo')
     .addTag('Notas (Grades)', 'Lançamento e consulta de notas')
-    .addTag('Frequência', 'Registro e consulta de presenças/faltas')
+    .addTag('Frequência (Attendances)', 'Registro e consulta de presenças/faltas')
     .addTag('Avisos', 'Comunicação oficial da escola/universidade')
-    .addTag('Faturas', 'Gestão de mensalidades e pagamentos')
+    .addTag('Financeiro (Faturas e Relatórios)', 'Gestão de mensalidades e pagamentos')
     .addTag('Relatórios Acadêmicos', 'Agregação de dados para histórico e desempenho')
     .addTag('Dashboards', 'Resumo de dados por perfil')
     .build();
