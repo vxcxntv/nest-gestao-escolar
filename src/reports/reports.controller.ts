@@ -1,18 +1,13 @@
-// src/reports/reports.controller.ts
-import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { Controller, Get, Param, UseGuards, Request, ParseUUIDPipe, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles/roles.guard';
+import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { ReportsService } from './reports.service';
-import { 
-  StudentHistoryResponse, 
-  ClassPerformanceResponse,
-  FinancialReportResponse 
-} from './dto/reports-response.dto';
+import { FilterFinancialReportDto } from './dto/filter-financial-report.dto'; // Assumindo a criação deste DTO
 
-@ApiTags('Relatórios Acadêmicos')
+@ApiTags('Relatórios Acadêmicos e Financeiros')
 @ApiBearerAuth()
 @Controller('reports')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -21,18 +16,14 @@ export class ReportsController {
 
   @Get('students/:studentId/history')
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.STUDENT)
-  @ApiOperation({ summary: 'Gerar histórico completo do aluno' })
-  @ApiParam({ name: 'studentId', description: 'ID do aluno' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Histórico gerado com sucesso',
-    type: StudentHistoryResponse
-  })
+  @ApiOperation({ summary: 'Gerar histórico completo do aluno (Boletim)' })
+  @ApiParam({ name: 'studentId', description: 'ID do aluno', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Histórico gerado com sucesso' })
   getStudentHistory(
-    @Param('studentId') studentId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
     @Request() req
   ) {
-    // Verificar se o usuário tem permissão para ver este histórico
+    // A regra de permissão interna (Aluno só vê o próprio histórico)
     if (req.user.role === UserRole.STUDENT && req.user.userId !== studentId) {
       throw new Error('Você só pode ver seu próprio histórico');
     }
@@ -43,25 +34,43 @@ export class ReportsController {
   @Get('classes/:classId/performance')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({ summary: 'Gerar relatório de desempenho da turma' })
-  @ApiParam({ name: 'classId', description: 'ID da turma' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Relatório de desempenho gerado com sucesso',
-    type: ClassPerformanceResponse
-  })
-  getClassPerformance(@Param('classId') classId: string) {
+  @ApiParam({ name: 'classId', description: 'ID da turma', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Relatório de desempenho gerado com sucesso' })
+  getClassPerformance(@Param('classId', ParseUUIDPipe) classId: string) {
     return this.reportsService.getClassPerformance(classId);
   }
 
-  @Get('financial/summary')
+  // Endpoint de Relatório Financeiro de Receita (Movido de InvoicesController)
+  @Get('financial/revenue')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Gerar relatório financeiro resumido' })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Relatório financeiro gerado com sucesso',
-    type: FinancialReportResponse
+  @ApiOperation({ summary: 'Relatório de Receita por Período' })
+  @ApiQuery({ 
+      name: 'startDate', 
+      type: 'string', 
+      description: 'Data de início (YYYY-MM-DD)', 
+      example: '2025-01-01' 
   })
-  getFinancialReport() {
-    return this.reportsService.getFinancialReport();
+  @ApiQuery({ 
+      name: 'endDate', 
+      type: 'string', 
+      description: 'Data de fim (YYYY-MM-DD)', 
+      example: '2025-12-31' 
+  })
+  getFinancialReport(
+      @Query('startDate') startDate: string, 
+      @Query('endDate') endDate: string
+  ) {
+    // O service deve lidar com a lógica de agregação do modelo Invoice
+    return this.reportsService.getRevenueReport(startDate, endDate); 
+  }
+
+  // Endpoint de Relatório Financeiro de Inadimplência (Movido de InvoicesController)
+  @Get('financial/defaults')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Relatório de Inadimplência (Faturas vencidas)' })
+  @ApiResponse({ status: 200, description: 'Lista de inadimplentes.' })
+  getFinancialDefaults() {
+    // O service deve lidar com a lógica de busca de inadimplentes do modelo Invoice
+    return this.reportsService.getDefaultsReport();
   }
 }

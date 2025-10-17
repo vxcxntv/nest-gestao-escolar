@@ -200,4 +200,33 @@ export class ReportsService {
       monthlyData
     };
   }
+
+  async getRevenueReport(startDate: string, endDate: string) {
+    const total = await this.invoiceModel.sum('amount', {
+      where: {
+        status: InvoiceStatus.PAID,
+        paidAt: { [Op.between]: [startDate, endDate] },
+      },
+    });
+
+    return {
+      periodo: { de: startDate, ate: endDate },
+      receitaTotal: total || 0,
+    };
+  }
+
+  /**
+   * Endpoint de Relatório Financeiro: Inadimplência
+   * (Resolve o erro: Property 'getDefaultsReport' does not exist)
+   */
+  async getDefaultsReport() {
+    return this.invoiceModel.findAll({
+      where: {
+        status: InvoiceStatus.PENDING,
+        dueDate: { [Op.lt]: new Date() }, // Vencidas (data de vencimento < data atual)
+      },
+      include: [{ model: this.userModel, as: 'student', attributes: ['id', 'name', 'email'] }],
+      order: [['dueDate', 'ASC']],
+    });
+  }
 }

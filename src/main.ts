@@ -35,8 +35,9 @@ async function bootstrap() {
     .addTag('Frequência (Attendances)', 'Registro e consulta de presenças/faltas')
     .addTag('Avisos', 'Comunicação oficial da escola/universidade')
     .addTag('Financeiro (Faturas e Relatórios)', 'Gestão de mensalidades e pagamentos')
-    .addTag('Relatórios Acadêmicos', 'Agregação de dados para histórico e desempenho')
+    .addTag('Relatórios Acadêmicos e Financeiros', 'Agregação de dados para histórico e desempenho')
     .addTag('Dashboards', 'Resumo de dados por perfil')
+    .addTag('Eventos do Calendário', 'Gestão de feriados e eventos escolares')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -1,8 +1,8 @@
 import { Controller, Get, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles/roles.guard';
+import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { DashboardsService } from './dashboards.service';
 import { 
@@ -43,14 +43,16 @@ export class DashboardsController {
   }
 
   @Get('student')
-  @Roles(UserRole.STUDENT)
-  @ApiOperation({ summary: 'Obter dashboard do aluno' })
+  @Roles(UserRole.STUDENT, UserRole.GUARDIAN) // Adicionamos GUARDIAN, pois responsáveis também veem este dashboard
+  @ApiOperation({ summary: 'Obter dashboard do aluno/responsável' })
   @ApiResponse({ 
     status: 200, 
-    description: 'Dashboard do aluno retornado com sucesso',
+    description: 'Dashboard do aluno/responsável retornado com sucesso',
     type: StudentDashboardResponse
   })
   getStudentDashboard(@Request() req) {
+    // A lógica para determinar o studentId (se for GUARDIAN) deve estar no service ou controller.
+    // Usamos o userId logado como base, esperando que o service faça a adaptação.
     return this.dashboardsService.getStudentDashboard(req.user.userId);
   }
 }

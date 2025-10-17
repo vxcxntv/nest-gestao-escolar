@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { User } from 'src/users/models/user.model';
@@ -13,7 +13,7 @@ import {
   AdminDashboardResponse, 
   TeacherDashboardResponse, 
   StudentDashboardResponse 
-} from './dto/dashboard-response.dto';
+} from './dto/dashboard-response.dto'; // Importação do DTO corrigido
 
 @Injectable()
 export class DashboardsService {
@@ -37,6 +37,7 @@ export class DashboardsService {
 
     const totalClasses = await this.classModel.count();
 
+    // Propriedade corrigida: Total de faturas PENDENTES (activeInvoices)
     const activeInvoices = await this.invoiceModel.count({
       where: { status: InvoiceStatus.PENDING }
     });
@@ -52,6 +53,7 @@ export class DashboardsService {
       }
     });
 
+    // Propriedades corrigidas: Receita e contagem do mês
     const paidInvoicesThisMonth = paidInvoices.length;
     const revenueThisMonth = paidInvoices.reduce((sum, invoice) => 
       sum + parseFloat(invoice.amount as any), 0
@@ -68,6 +70,7 @@ export class DashboardsService {
   }
 
   async getTeacherDashboard(teacherId: string): Promise<TeacherDashboardResponse> {
+    // Propriedade corrigida: Total de turmas do professor (myClasses)
     const myClasses = await this.classModel.count({
       where: { teacherId }
     });
@@ -76,10 +79,11 @@ export class DashboardsService {
     const pendingGrading = await this.gradeModel.count({
       where: { 
         teacherId,
-        value: { [Op.is]: null }
+        value: { [Op.is]: null } // Onde o valor é nulo (nota não lançada)
       }
     });
 
+    // Próximas turmas (exemplo)
     const nextClasses = await this.classModel.findAll({
       where: { teacherId },
       limit: 5,
@@ -99,7 +103,7 @@ export class DashboardsService {
       nextClasses: nextClasses.map(cls => ({
         id: cls.id,
         name: cls.name,
-        academicYear: cls.academic_year
+        academicYear: cls.academic_year // Usando academic_year (snake_case)
       })),
       recentAnnouncements: recentAnnouncements.map(ann => ({
         id: ann.id,
@@ -117,6 +121,7 @@ export class DashboardsService {
       }]
     });
 
+    // Propriedade corrigida: Contagem de turmas matriculadas (enrolledClasses)
     const enrolledClasses = user?.enrolledClasses?.length || 0;
 
     // Calcular média de notas
@@ -141,7 +146,7 @@ export class DashboardsService {
     const upcomingAssignments = await this.gradeModel.findAll({
       where: { 
         studentId,
-        value: { [Op.is]: null }
+        value: { [Op.is]: null } // Onde o valor é nulo (nota não lançada)
       },
       limit: 5,
       order: [['createdAt', 'DESC']]

@@ -12,6 +12,7 @@ import { AnnouncementsModule } from './announcements/announcements.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { DashboardsModule } from './dashboards/dashboards.module';
 import { ReportsModule } from './reports/reports.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ReportsModule } from './reports/reports.module';
     InvoicesModule,
     DashboardsModule,
     ReportsModule,
+    EventsModule,
   ],
   controllers: [],
   providers: [],

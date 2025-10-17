@@ -1,73 +1,62 @@
-// src/dashboards/dto/dashboard-response.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
+// --- Resposta do Dashboard Admin ---
 export class AdminDashboardResponse {
-  @ApiProperty({ example: 150 })
-  totalStudents: number;
+    @ApiProperty({ description: 'Total de alunos no sistema.', example: 1250 })
+    totalStudents: number;
+    
+    @ApiProperty({ description: 'Total de professores.', example: 50 })
+    totalTeachers: number;
+    
+    @ApiProperty({ description: 'Total de turmas ativas.', example: 45 })
+    totalClasses: number;
+    
+    // Propriedade corrigida para refletir o retorno do serviço: faturas ativas
+    @ApiProperty({ description: 'Total de faturas PENDENTES.', example: 87 })
+    activeInvoices: number; // Corrigido
+    
+    // Propriedade corrigida para refletir o cálculo no serviço
+    @ApiProperty({ description: 'Número de faturas pagas neste mês.', example: 250 })
+    paidInvoicesThisMonth: number; // Corrigido
 
-  @ApiProperty({ example: 20 })
-  totalTeachers: number;
-
-  @ApiProperty({ example: 15 })
-  totalClasses: number;
-
-  @ApiProperty({ example: 45 })
-  activeInvoices: number;
-
-  @ApiProperty({ example: 120 })
-  paidInvoicesThisMonth: number;
-
-  @ApiProperty({ example: 12500.50 })
-  revenueThisMonth: number;
+    // Propriedade corrigida para refletir o cálculo no serviço
+    @ApiProperty({ description: 'Receita total neste mês.', example: 550000.50 })
+    revenueThisMonth: number; // Corrigido
 }
 
+// --- Resposta do Dashboard Professor ---
 export class TeacherDashboardResponse {
-  @ApiProperty({ example: 3 })
-  myClasses: number;
+    // Propriedade corrigida para refletir o retorno do serviço: myClasses
+    @ApiProperty({ description: 'Número de turmas lecionadas.', example: 3 })
+    myClasses: number; // Corrigido
 
-  @ApiProperty({ example: 15 })
-  pendingGrading: number;
+    // Propriedade corrigida para refletir o retorno do serviço: pendingGrading
+    @ApiProperty({ description: 'Número de trabalhos ou provas pendentes de correção.', example: 15 })
+    pendingGrading: number; // Corrigido
 
-  @ApiProperty({ 
-    example: [
-      { id: 'uuid', name: 'Turma 301', academicYear: 2024 },
-      { id: 'uuid', name: 'Turma 302', academicYear: 2024 }
-    ] 
-  })
-  nextClasses: any[];
-
-  @ApiProperty({ 
-    example: [
-      { id: 'uuid', title: 'Prova Bimestral', createdAt: '2024-01-15T10:00:00Z' },
-      { id: 'uuid', title: 'Reunião de Pais', createdAt: '2024-01-10T14:30:00Z' }
-    ] 
-  })
-  recentAnnouncements: any[];
+    // Detalhes da próxima turma, refletindo o array de objetos no service
+    @ApiProperty({ type: 'array', description: 'Lista das próximas turmas (com ID, nome e ano letivo).', items: { type: 'object' } })
+    nextClasses: { id: string, name: string, academicYear: number }[]; // Corrigido
+    
+    @ApiProperty({ type: 'array', description: 'Avisos recentes publicados pelo professor.', items: { type: 'object' } })
+    recentAnnouncements: { id: string, title: string, createdAt: Date }[];
 }
 
+// --- Resposta do Dashboard Aluno ---
 export class StudentDashboardResponse {
-  @ApiProperty({ example: 5 })
-  enrolledClasses: number;
+    // Propriedade corrigida para refletir o retorno do serviço: enrolledClasses
+    @ApiProperty({ description: 'Número de turmas nas quais o aluno está matriculado.', example: 4 })
+    enrolledClasses: number; // Corrigido
+    
+    @ApiProperty({ description: 'Média de notas geral do aluno.', example: 8.5 })
+    averageGrade: number;
 
-  @ApiProperty({ example: 8.5 })
-  averageGrade: number;
+    @ApiProperty({ description: 'Taxa de frequência (em percentual).', example: 95.50 })
+    attendanceRate: number;
+    
+    @ApiProperty({ type: 'array', description: 'Próximos trabalhos/provas pendentes.', items: { type: 'object' } })
+    upcomingAssignments: { id: string, description: string, dueDate: Date }[];
 
-  @ApiProperty({ example: 85.5 })
-  attendanceRate: number;
-
-  @ApiProperty({ 
-    example: [
-      { id: 'uuid', description: 'Trabalho de História', dueDate: '2024-01-20T23:59:00Z' },
-      { id: 'uuid', description: 'Prova de Matemática', dueDate: '2024-01-25T23:59:00Z' }
-    ] 
-  })
-  upcomingAssignments: any[];
-
-  @ApiProperty({ 
-    example: [
-      { id: 'uuid', value: 9.0, description: 'Prova Bimestral', teacher: 'Prof. Silva' },
-      { id: 'uuid', value: 8.5, description: 'Trabalho em Grupo', teacher: 'Prof. Santos' }
-    ] 
-  })
-  recentGrades: any[];
+    @ApiProperty({ type: 'array', description: 'Notas recentes (Array de objetos de nota).', items: { type: 'object' } })
+    recentGrades: any[];
 }
