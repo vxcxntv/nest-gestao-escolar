@@ -129,6 +129,20 @@ export class ClassesService {
     await classInstance.$add('subject', subjectId);
   }
 
+  /**
+   * Desassocia uma disciplina de uma turma.
+   * @param classId O ID da turma.
+   * @param subjectId O ID da disciplina a ser desassociada.
+   */
+  async removeSubjectFromClass(classId: string, subjectId: string): Promise<void> {
+    const classInstance = await this.classModel.findByPk(classId);
+    if (!classInstance) {
+      throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
+    }
+    // Usa o método $remove do Sequelize
+    await classInstance.$remove('subject', subjectId);
+  }
+
   async addStudentToClass(classId: string, studentId: string): Promise<void> {
     const classInstance = await this.classModel.findByPk(classId);
     if (!classInstance) {
@@ -137,6 +151,20 @@ export class ClassesService {
     // Validação extra: verificar se o usuário existe e se ele é um aluno.
     // (Isso será implementado de forma mais robusta com autenticação)
     await classInstance.$add('student', studentId);
+  }
+
+  /**
+   * Desmatricula um aluno de uma turma.
+   * @param classId O ID da turma.
+   * @param studentId O ID do aluno a ser desmatriculado.
+   */
+  async removeStudentFromClass(classId: string, studentId: string): Promise<void> {
+    const classInstance = await this.classModel.findByPk(classId);
+    if (!classInstance) {
+      throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
+    }
+    // Usa o método $remove do Sequelize (relação M:N através de 'student')
+    await classInstance.$remove('student', studentId);
   }
 
   async getStudentsFromClass(classId: string): Promise<User[]> {

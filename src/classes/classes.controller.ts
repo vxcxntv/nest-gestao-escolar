@@ -100,6 +100,18 @@ export class ClassesController {
     return this.classesService.addSubjectToClass(classId, subjectId);
   }
 
+@Delete(':classId/subjects/:subjectId')
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Desassocia uma disciplina da turma' })
+  @ApiResponse({ status: 204, description: 'Disciplina desassociada com sucesso.' })
+  removeSubjectFromClass(
+    @Param('classId', ParseUUIDPipe) classId: string,
+    @Param('subjectId', ParseUUIDPipe) subjectId: string,
+  ) {
+    return this.classesService.removeSubjectFromClass(classId, subjectId);
+  }
+
   @Post(':classId/students')
   @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.ADMIN)
@@ -113,6 +125,18 @@ export class ClassesController {
     return this.classesService.addStudentToClass(classId, studentId);
   }
 
+  @Delete(':classId/students/:studentId')
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Desmatricula um aluno de uma turma' })
+  @ApiResponse({ status: 204, description: 'Aluno desmatriculado com sucesso.' })
+  removeStudentFromClass(
+    @Param('classId', ParseUUIDPipe) classId: string,
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+  ) {
+    return this.classesService.removeStudentFromClass(classId, studentId);
+  }
+  
   @Get(':classId/students')
   @ApiOperation({ summary: 'Lista todos os alunos matriculados em uma turma' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Lista de alunos da turma retornada.' })
