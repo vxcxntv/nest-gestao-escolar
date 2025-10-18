@@ -1,0 +1,1608 @@
+{
+	"info": {
+		"_postman_id": "be68a5df-c3b8-49ea-8beb-49fa81293433",
+		"name": "Gestão Escolar API",
+		"description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "47885153",
+		"_collection_link": "https://ricardo-ribeiro-s-team.postman.co/workspace/Team-Workspace~486d9850-bb59-4f31-89c0-a6fcbe7ff9a5/collection/47885153-be68a5df-c3b8-49ea-8beb-49fa81293433?action=share&source=collection_link&creator=47885153"
+	},
+	"item": [
+		{
+			"name": "Atutenticação",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Script simplificado - sempre salva como admin\r",
+									"if (pm.response.code === 200) {\r",
+									"    const response = pm.response.json();\r",
+									"    const accessToken = response.access_token;\r",
+									"    \r",
+									"    // SEMPRE salva como token_admin, independente do perfil real\r",
+									"    pm.environment.set('token_admin', accessToken);\r",
+									"    pm.environment.set('current_token', accessToken);\r",
+									"    \r",
+									"    // Força o role como admin para consistência\r",
+									"    pm.environment.set('current_user_role', 'admin');\r",
+									"    pm.environment.set('current_user_id', response.user?.id || 'admin_id');\r",
+									"    pm.environment.set('current_user_email', response.user?.email || 'admin@escola.com');\r",
+									"    pm.environment.set('current_user_name', response.user?.name || 'Administrador');\r",
+									"    \r",
+									"    console.log('✅ Token de ADMIN configurado (forçado)');\r",
+									"    console.log('🔑 Token: ' + accessToken.substring(0, 20) + '...');\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"admin@escola.com\",\r\n  \"password\": \"senha123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usuários",
+			"item": [
+				{
+					"name": "Listar usuários",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users?page=1&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar usuário",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {\r",
+									"    const user = pm.response.json();\r",
+									"    if (user.role === 'student') {\r",
+									"        pm.environment.set('test_student_id', user.id);\r",
+									"        console.log('✅ Student ID salvo: ' + user.id);\r",
+									"    }\r",
+									"    if (user.role === 'teacher') {\r",
+									"        pm.environment.set('test_teacher_id', user.id);\r",
+									"        console.log('✅ Teacher ID salvo: ' + user.id);\r",
+									"    }\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Administrador\",\r\n  \"email\": \"admin@escola.com\",\r\n  \"password\": \"admin123\",\r\n  \"role\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar usuário por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/users/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Alterar senha",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"currentPassword\": \"senhaAntiga123\",\r\n  \"newPassword\": \"novaSenha456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/me/password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter infos usuário logado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/me?Authorization=Bearer {{token_admin}}&Content-Type=application/json",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							],
+							"query": [
+								{
+									"key": "Authorization",
+									"value": "Bearer {{token_admin}}"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar usuário",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Pablo Vegetti\",\r\n  \"email\": \"pablovegetti@escola.com\",\r\n  \"role\": \"teacher\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/users/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover usuário pelo id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/users/{id}?Authorization=Bearer {{token_admin}}&Content-Type=application/json",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"users",
+								"{id}"
+							],
+							"query": [
+								{
+									"key": "Authorization",
+									"value": "Bearer {{token_admin}}"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Classes",
+			"item": [
+				{
+					"name": "Listar turmas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/classes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar turmas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {\r",
+									"    const turma = pm.response.json();\r",
+									"    pm.environment.set('test_class_id', turma.id);\r",
+									"    console.log('✅ Class ID salvo: ' + turma.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Turma A\",\r\n  \"year\": 2025,\r\n  \"period\": \"manhã\",\r\n  \"teacherId\": \"{{current_user_id}}\"  // ← Você mesmo como professor\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/classes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Matricular Aluno",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/classes/{classId}/students ",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{classId}",
+								"students "
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar Turma",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"8º Ano B\",\r\n  \"period\": \"tarde\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/classes/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar turma por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover turma",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Associar disciplina a turma",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"studentId\": \"{{test_student_id}}\",  // ← Configurar esta variável\r\n  \"subjectId\": \"{{test_subject_id}}\",  // ← Configurar esta variável\r\n  \"classId\": \"{{test_class_id}}\",      // ← Configurar esta variável\r\n  \"value\": 8.5,\r\n  \"type\": \"prova\",\r\n  \"description\": \"Prova Bimestral\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/classes/{classId}/subjects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{classId}",
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove disciplina da turma",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes/{classId}/subjects/{subjectId}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{classId}",
+								"subjects",
+								"{subjectId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar alunos matriculados",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes/{classId}/students",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{classId}",
+								"students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove aluno da turma",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/classes/{classId}/students/{studentId}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"classes",
+								"{classId}",
+								"students",
+								"{studentId}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Disciplinas",
+			"item": [
+				{
+					"name": "Criar disciplina",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {\r",
+									"    const disciplina = pm.response.json();\r",
+									"    pm.environment.set('test_subject_id', disciplina.id);\r",
+									"    console.log('✅ Subject ID salvo: ' + disciplina.id);\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Matemática\",\r\n  \"code\": \"MAT-08\",\r\n  \"description\": \"Matemática para o 8º ano\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/subjects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar disciplinas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar disciplina pelo id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar disciplina",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Matemática Avançada\",\r\n  \"description\": \"Conteúdo atualizado\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/subjects/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover disciplina",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/subjects/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"subjects",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notas",
+			"item": [
+				{
+					"name": "Lançar nota",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\",\r\n  \"subjectId\": \"507f1f77bcf86cd799439012\",\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"value\": 8.5,\r\n  \"type\": \"prova\",\r\n  \"description\": \"Prova Bimestral - 1º Bimestre\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/grades",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"grades"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Notas do aluno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/{studentId}/grades",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"{studentId}",
+								"grades"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar notas usuário logado",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/my-grades",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"my-grades"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualiza nota",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"value\": 9.0,\r\n  \"description\": \"Nota atualizada após revisão\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/grades/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"grades",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover nota pelo id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/grades/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"grades",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Frequência",
+			"item": [
+				{
+					"name": "Registrar frequência",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"subjectId\": \"507f1f77bcf86cd799439012\",\r\n  \"date\": \"2025-10-17\",\r\n  \"records\": [\r\n    {\r\n      \"studentId\": \"507f1f77bcf86cd799439013\",\r\n      \"status\": \"present\"\r\n    },\r\n    {\r\n      \"studentId\": \"507f1f77bcf86cd799439015\",\r\n      \"status\": \"absent\"\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/attendances",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar frequências",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/attendances",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Consultar histórico frequência",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/attendances/students/{studentId}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances",
+								"students",
+								"{studentId}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resumo de frequências",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/attendances/classes/{classId}/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances",
+								"classes",
+								"{classId}",
+								"summary"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar frequência",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"status\": \"justified\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/attendances/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover frequência",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/attendances/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"attendances",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Avisos",
+			"item": [
+				{
+					"name": "Criar avisos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Reunião de Pais\",\r\n  \"content\": \"Há uma reunião de pais marcada para próxima sexta-feira...\",\r\n  \"targetAudience\": [\"parents\", \"students\"],\r\n  \"priority\": \"high\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"announcements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar avisos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/announcements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"announcements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar aviso por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/announcements/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"announcements",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar aviso",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Título atualizado\",\r\n  \"content\": \"Conteúdo atualizado\",\r\n  \"priority\": \"high|medium|low\",\r\n  \"targetAudience\": [\"students\", \"parents\", \"teachers\"],\r\n  \"isActive\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/announcements/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"announcements",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover aviso",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/announcements/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"announcements",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Financeiro",
+			"item": [
+				{
+					"name": "Criar fatura individual",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\",\r\n  \"dueDate\": \"2025-11-05\",\r\n  \"amount\": 850.00,\r\n  \"description\": \"Mensalidade - Novembro/2025\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invoices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar faturas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/invoices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar dados fatura",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"amount\": 800.00,\r\n  \"dueDate\": \"2025-11-10\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invoices/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar fatura por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/invoices/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar faturas por aluno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/students/{studentId}/invoices",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"students",
+								"{studentId}",
+								"invoices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar faturas em lote",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"dueDate\": \"2025-11-05\",\r\n  \"amount\": 850.00,\r\n  \"description\": \"Mensalidade - Novembro/2025\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invoices/batch",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices",
+								"batch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar fatura como paga",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"paymentDate\": \"2025-10-18\",\r\n  \"paymentMethod\": \"pix\",\r\n  \"transactionId\": \"TX123456789\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invoices/{id}/pay",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices",
+								"{id}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar fatura como cancelada",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"cancellationReason\": \"Pagamento duplicado\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/invoices/{id}/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"invoices",
+								"{id}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Relatórios acadêmicos e Financeiros",
+			"item": [
+				{
+					"name": "Relatório de receita por periodo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/financial/revenue",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"financial",
+								"revenue"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Relatório de inadimplência",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/financial/defaults",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"financial",
+								"defaults"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gerar histórico completo do aluno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/students/{studentId}/history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"students",
+								"{studentId}",
+								"history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gerar relatório de desempenha da turma",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/reports/classes/{classId}/performance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"reports",
+								"classes",
+								"{classId}",
+								"performance"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashboards",
+			"item": [
+				{
+					"name": "Dashboard admin",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dashboard/admin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard aluno",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dashboard/student",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"student"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard professor",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/dashboard/teacher",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"dashboard",
+								"teacher"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Eventos do Calendário",
+			"item": [
+				{
+					"name": "Criar evento",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Feriado - Dia do Professor\",\r\n  \"description\": \"Feriado escolar\",\r\n  \"startDate\": \"2025-10-15\",\r\n  \"endDate\": \"2025-10-15\",\r\n  \"type\": \"holiday\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar eventos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Buscar evento pelo ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar evento",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Feriado - Dia dos Professores\",\r\n  \"description\": \"Feriado nacional em homenagem aos professores\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/events/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover evento",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/events/{id}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"events",
+								"{id}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
