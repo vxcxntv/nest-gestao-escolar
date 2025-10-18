@@ -146,13 +146,19 @@ export class AttendancesService {
     await attendance.update(updateAttendanceDto);
 
     // Retornar o registro atualizado com as relações
-    return this.attendanceModel.findByPk(id, {
+    const updatedAttendance = await this.attendanceModel.findByPk(id, {
       include: [
         { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
         { model: Class, attributes: ['id', 'name'] },
         { model: Subject, attributes: ['id', 'name'] }
       ]
     });
+
+    if (!updatedAttendance) {
+      throw new NotFoundException(`Registro de frequência com ID ${id} não encontrado`);
+    }
+
+    return updatedAttendance;
   }
 
   /**
