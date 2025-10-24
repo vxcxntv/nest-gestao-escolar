@@ -5,11 +5,34 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { LoginRequestDto } from './dto/login-request.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { Public } from '../common/decorators/public.decorator'
 
 @ApiTags('Autenticação')
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
+
+    @Post('register')
+    @Public()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Registrar primeiro usuário admin (público)' })
+    @ApiBody({ 
+        type: CreateUserDto, 
+        description: 'Dados para criação do primeiro usuário admin.' 
+    })
+    @ApiResponse({ 
+        status: 201, 
+        description: 'Usuário admin criado com sucesso. Retorna token de acesso.',
+        type: AuthResponseDto 
+    })
+    @ApiResponse({ 
+        status: 400, 
+        description: 'Registro público apenas para o primeiro usuário do sistema.' 
+    })
+    async register(@Body() createUserDto: CreateUserDto) {
+        return this.authService.register(createUserDto);
+    }
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
