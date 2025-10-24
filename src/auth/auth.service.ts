@@ -1,7 +1,10 @@
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -41,5 +44,15 @@ export class AuthService {
         role: user.role
       }
     };
+  }
+
+  async register(createUserDto: CreateUserDto): Promise<AuthResponseDto> {
+    const userCount = await this.usersService.count();
+    if (userCount > 0) {
+      throw new BadRequestException('Registro público apenas para o primeiro usuário');
+    }
+    createUserDto.role = 'admin';
+    const user = await this.usersService.create(createUserDto);
+    return this.login(user);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -171,5 +171,9 @@ export class UsersService {
     await user.update({ password_hash: hashedNewPassword });
 
     return { message: 'Senha alterada com sucesso' };
+  }
+
+  async count(): Promise<number> {
+    return this.userModel.count();
   }
 }
