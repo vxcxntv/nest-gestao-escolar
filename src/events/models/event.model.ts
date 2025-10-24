@@ -5,7 +5,7 @@ export enum EventType {
   HOLIDAY = 'holiday',
   EXAM = 'exam',
   MEETING = 'meeting',
-  REUNION = 'reunion', // Reunião
+  REUNION = 'reunion',
   OTHER = 'other',
 }
 
@@ -31,7 +31,7 @@ export class Event extends Model {
   description: string;
 
   @Column({
-    type: DataType.DATEONLY, // Apenas a data, sem hora
+    type: DataType.DATEONLY,
     allowNull: false,
   })
   date: Date;
@@ -41,5 +41,5 @@ export class Event extends Model {
     allowNull: false,
     defaultValue: EventType.OTHER,
   })
-  type: EventType; // Tipo do evento (feriado, prova, etc.)
+  type: EventType;
 }

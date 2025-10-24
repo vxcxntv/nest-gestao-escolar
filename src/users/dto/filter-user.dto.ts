@@ -1,10 +1,8 @@
-// src/users/dto/filter-user.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserRole } from '../models/user.model';
 
-// DTO base para paginação (pode estar em outro arquivo, ex: pagination.dto.ts)
 export class PaginationDto {
   @ApiProperty({
     required: false,

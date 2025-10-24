@@ -22,7 +22,7 @@ export class GradesService {
   async create(createGradeDto: CreateGradeDto, teacherId: string): Promise<Grade> {
     const gradeData = {
       ...createGradeDto,
-      teacherId, // Adiciona o ID do professor que está lançando a nota
+      teacherId, 
     };
     return this.gradeModel.create(gradeData);
   }

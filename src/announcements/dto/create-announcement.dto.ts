@@ -1,4 +1,3 @@
-// src/announcements/dto/create-announcement.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 

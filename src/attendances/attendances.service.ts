@@ -24,9 +24,6 @@ export class AttendancesService {
     private sequelize: Sequelize, 
   ) {}
 
-  /**
-   * Cria múltiplos registros de frequência em lote para uma aula.
-   */
   async createBatch(createAttendanceDto: CreateAttendanceDto): Promise<void> {
     const transaction = await this.sequelize.transaction();
     try {
@@ -48,10 +45,6 @@ export class AttendancesService {
     }
   }
 
-  /**
-   * Implementa o Endpoint GET /attendances
-   * Lista todos os registros de frequência com filtros e paginação.
-   */
   async findAll(filterDto: FilterAttendanceDto) {
     const { page = 1, limit = 10, classId, subjectId, studentId, dateFrom } = filterDto;
     const where: any = {};
@@ -87,11 +80,6 @@ export class AttendancesService {
     };
   }
 
-  /**
-   * Implementa o Endpoint GET /students/:studentId/attendances
-   * Consulta o histórico de frequência de um aluno específico, aplicando permissões.
-   * user: Objeto do usuário logado para verificação de permissão.
-   */
   async findStudentHistory(studentId: string, user: any) {
     // 1. Verificação de Permissão (Regra de Negócio)
     const isOwner = user.userId === studentId;

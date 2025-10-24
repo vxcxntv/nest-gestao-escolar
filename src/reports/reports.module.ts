@@ -1,4 +1,3 @@
-// src/reports/reports.module.ts
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ReportsService } from './reports.service';

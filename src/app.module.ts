@@ -1,4 +1,3 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
@@ -17,7 +16,7 @@ import { EventsModule } from './events/events.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Variáveis de ambiente disponíveis em toda a aplicação
+      isGlobal: true, 
     }),
     SequelizeModule.forRoot({
       dialect: process.env.DB_DIALECT as any,
@@ -26,8 +25,8 @@ import { EventsModule } from './events/events.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      autoLoadModels: true, // Carrega todos os modelos automaticamente
-      synchronize: true, // Cria/atualiza as tabelas no banco. Use apenas em desenvolvimento!
+      autoLoadModels: true, 
+      synchronize: true, 
     }),
     UsersModule,
     SubjectsModule,

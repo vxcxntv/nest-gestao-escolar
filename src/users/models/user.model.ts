@@ -1,6 +1,5 @@
-// src/users/models/user.model.ts
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript'; // Adicione HasMany
-import { Class } from 'src/classes/models/class.model'; // Importe Class
+import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { Class } from 'src/classes/models/class.model';
 import { BelongsToMany } from 'sequelize-typescript';
 import { Enrollment } from 'src/classes/models/enrollment.model';
 
@@ -8,7 +7,7 @@ export enum UserRole {
   ADMIN = 'admin',
   TEACHER = 'teacher',
   STUDENT = 'student',
-  GUARDIAN = 'guardian', // Responsável
+  GUARDIAN = 'guardian', 
 }
 
 @Table({ tableName: 'users', timestamps: true })

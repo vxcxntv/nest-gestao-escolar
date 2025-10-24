@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger'; // NOVO: Importe ApiProperty
+import { ApiProperty } from '@nestjs/swagger'; 
 import { UserRole } from '../models/user.model';
 
 export class CreateUserDto {

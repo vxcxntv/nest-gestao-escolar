@@ -1,4 +1,3 @@
-// src/reports/dto/reports-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 
 export class StudentHistoryResponse {

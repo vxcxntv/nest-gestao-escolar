@@ -1,4 +1,3 @@
-// src/classes/models/enrollment.model.ts
 import {
   Table, Column, Model, DataType, ForeignKey,
 } from 'sequelize-typescript';

@@ -1,8 +1,7 @@
-// src/subjects/models/subject.model.ts
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
-import { BelongsToMany } from 'sequelize-typescript'; // Importe
-import { Class } from 'src/classes/models/class.model'; // Importe
-import { ClassSubject } from 'src/classes/models/class-subject.model'; // Importe
+import { BelongsToMany } from 'sequelize-typescript'; 
+import { Class } from 'src/classes/models/class.model'; 
+import { ClassSubject } from 'src/classes/models/class-subject.model'; 
 
 
 @Table({ tableName: 'subjects', timestamps: true })

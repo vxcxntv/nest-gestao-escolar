@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
     export class PaginationDto {
       @IsOptional()
       @IsNumber()
-      @Type(() => Number) // Transforma a string da query em número
+      @Type(() => Number)
       @Min(1)
       page?: number = 1;
 

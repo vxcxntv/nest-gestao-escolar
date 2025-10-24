@@ -13,7 +13,7 @@ import {
   AdminDashboardResponse, 
   TeacherDashboardResponse, 
   StudentDashboardResponse 
-} from './dto/dashboard-response.dto'; // Importação do DTO corrigido
+} from './dto/dashboard-response.dto'; 
 
 @Injectable()
 export class DashboardsService {
@@ -37,7 +37,6 @@ export class DashboardsService {
 
     const totalClasses = await this.classModel.count();
 
-    // Propriedade corrigida: Total de faturas PENDENTES (activeInvoices)
     const activeInvoices = await this.invoiceModel.count({
       where: { status: InvoiceStatus.PENDING }
     });
@@ -53,7 +52,6 @@ export class DashboardsService {
       }
     });
 
-    // Propriedades corrigidas: Receita e contagem do mês
     const paidInvoicesThisMonth = paidInvoices.length;
     const revenueThisMonth = paidInvoices.reduce((sum, invoice) => 
       sum + parseFloat(invoice.amount as any), 0
@@ -70,12 +68,10 @@ export class DashboardsService {
   }
 
   async getTeacherDashboard(teacherId: string): Promise<TeacherDashboardResponse> {
-    // Propriedade corrigida: Total de turmas do professor (myClasses)
     const myClasses = await this.classModel.count({
       where: { teacherId }
     });
 
-    // Simulação de tarefas pendentes
     const pendingGrading = await this.gradeModel.count({
       where: { 
         teacherId,
@@ -121,7 +117,6 @@ export class DashboardsService {
       }]
     });
 
-    // Propriedade corrigida: Contagem de turmas matriculadas (enrolledClasses)
     const enrolledClasses = user?.enrolledClasses?.length || 0;
 
     // Calcular média de notas

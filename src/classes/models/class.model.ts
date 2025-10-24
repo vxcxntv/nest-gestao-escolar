@@ -1,7 +1,6 @@
-// src/classes/models/class.model.ts
-import { BelongsToMany } from 'sequelize-typescript'; // Importe
-import { Subject } from 'src/subjects/models/subject.model'; // Importe
-import { ClassSubject } from './class-subject.model'; // Importe
+import { BelongsToMany } from 'sequelize-typescript'; 
+import { Subject } from 'src/subjects/models/subject.model'; 
+import { ClassSubject } from './class-subject.model';
 import { User } from 'src/users/models/user.model';
 import { Enrollment } from './enrollment.model';
 
@@ -24,15 +23,13 @@ export class Class extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string; // Ex: "Turma 301 - Tarde"
+  name: string; 
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  academic_year: number; // Ex: 2025
-
-  // --- RELACIONAMENTO: Uma Turma pertence a um Professor (User) ---
+  academic_year: number; 
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,

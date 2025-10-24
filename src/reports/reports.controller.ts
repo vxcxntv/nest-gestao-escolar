@@ -5,7 +5,7 @@ import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { ReportsService } from './reports.service';
-import { FilterFinancialReportDto } from './dto/filter-financial-report.dto'; // Assumindo a criação deste DTO
+import { FilterFinancialReportDto } from './dto/filter-financial-report.dto';
 
 @ApiTags('Relatórios Acadêmicos e Financeiros')
 @ApiBearerAuth()
@@ -40,7 +40,6 @@ export class ReportsController {
     return this.reportsService.getClassPerformance(classId);
   }
 
-  // Endpoint de Relatório Financeiro de Receita (Movido de InvoicesController)
   @Get('financial/revenue')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Relatório de Receita por Período' })
@@ -60,17 +59,14 @@ export class ReportsController {
       @Query('startDate') startDate: string, 
       @Query('endDate') endDate: string
   ) {
-    // O service deve lidar com a lógica de agregação do modelo Invoice
     return this.reportsService.getRevenueReport(startDate, endDate); 
   }
 
-  // Endpoint de Relatório Financeiro de Inadimplência (Movido de InvoicesController)
   @Get('financial/defaults')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Relatório de Inadimplência (Faturas vencidas)' })
   @ApiResponse({ status: 200, description: 'Lista de inadimplentes.' })
   getFinancialDefaults() {
-    // O service deve lidar com a lógica de busca de inadimplentes do modelo Invoice
     return this.reportsService.getDefaultsReport();
   }
 }

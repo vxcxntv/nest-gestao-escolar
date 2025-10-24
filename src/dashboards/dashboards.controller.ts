@@ -51,8 +51,6 @@ export class DashboardsController {
     type: StudentDashboardResponse
   })
   getStudentDashboard(@Request() req) {
-    // A lógica para determinar o studentId (se for GUARDIAN) deve estar no service ou controller.
-    // Usamos o userId logado como base, esperando que o service faça a adaptação.
     return this.dashboardsService.getStudentDashboard(req.user.userId);
   }
 }

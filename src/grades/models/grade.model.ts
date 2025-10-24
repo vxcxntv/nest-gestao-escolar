@@ -1,4 +1,3 @@
-// src/grades/models/grade.model.ts
 import {
   Table, Column, Model, DataType, ForeignKey, BelongsTo
 } from 'sequelize-typescript';

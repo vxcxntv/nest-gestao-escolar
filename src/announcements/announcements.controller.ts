@@ -37,7 +37,6 @@ export class AnnouncementsController {
     return this.announcementsService.findAll(filterDto, req.user);
   }
 
-  // --- ENDPOINT GET (BY ID) IMPLEMENTADO ---
   @Get(':id')
   @ApiOperation({ summary: 'Busca um aviso por ID' })
   @ApiResponse({ status: 200, description: 'Aviso retornado com sucesso.' })
@@ -46,7 +45,6 @@ export class AnnouncementsController {
     return this.announcementsService.findOne(id);
   }
 
-  // --- ENDPOINT PATCH IMPLEMENTADO ---
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({ summary: 'Atualiza um aviso' })
@@ -57,11 +55,9 @@ export class AnnouncementsController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAnnouncementDto: UpdateAnnouncementDto,
   ) {
-    // Aqui você poderia adicionar uma lógica para garantir que um professor só edite o próprio aviso
     return this.announcementsService.update(id, updateAnnouncementDto);
   }
 
-  // --- ENDPOINT DELETE IMPLEMENTADO ---
   @Delete(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @HttpCode(HttpStatus.NO_CONTENT) // Retorna status 204 em caso de sucesso
@@ -70,7 +66,6 @@ export class AnnouncementsController {
   @ApiResponse({ status: 404, description: 'Aviso não encontrado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
-    // Lógica de permissão similar à de atualização pode ser adicionada aqui
     return this.announcementsService.remove(id);
   }
 }

@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { Subject } from './models/subject.model';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
-import { FilterSubjectDto } from './dto/filter-subject.dto'; // Importe o DTO de filtro
+import { FilterSubjectDto } from './dto/filter-subject.dto';
 
 @Injectable()
 export class SubjectsService {

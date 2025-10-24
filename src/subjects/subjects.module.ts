@@ -1,12 +1,11 @@
-// src/subjects/subjects.module.ts
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { SubjectsService } from './subjects.service';
 import { SubjectsController } from './subjects.controller';
-import { Subject } from './models/subject.model'; // Importe
+import { Subject } from './models/subject.model'; 
 
 @Module({
-  imports: [SequelizeModule.forFeature([Subject])], // Registre
+  imports: [SequelizeModule.forFeature([Subject])],
   controllers: [SubjectsController],
   providers: [SubjectsService],
 })

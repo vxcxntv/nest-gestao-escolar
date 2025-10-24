@@ -17,7 +17,7 @@ import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { UserRole } from 'src/users/models/user.model';
 import { CreateGradeDto } from './dto/create-grade.dto';
-import { UpdateGradeDto } from './dto/update-grade.dto'; // Importe o DTO de update
+import { UpdateGradeDto } from './dto/update-grade.dto';
 import { GradesService } from './grades.service';
 import {
   ApiTags,
@@ -29,15 +29,13 @@ import {
 } from '@nestjs/swagger';
 
 @ApiTags('Notas (Grades)')
-@ApiBearerAuth() // Indica que todas as rotas precisam de um token JWT
-@UseGuards(AuthGuard('jwt'), RolesGuard) // Protege todas as rotas deste controller
-@Controller() // Deixamos o controller vazio e definimos o prefixo na rota específica
+@ApiBearerAuth() 
+@UseGuards(AuthGuard('jwt'), RolesGuard) 
+@Controller() /
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
-  /**
-   * Endpoint para um professor lançar uma nova nota.
-   */
+  
   @Roles(UserRole.TEACHER)
   @Post('grades')
   @ApiOperation({ summary: 'Lança uma nova nota para um aluno em uma disciplina.' })
@@ -45,14 +43,11 @@ export class GradesController {
   @ApiResponse({ status: 201, description: 'Nota lançada com sucesso.' })
   @ApiResponse({ status: 403, description: 'Acesso negado. Apenas Professores.' })
   create(@Body() createGradeDto: CreateGradeDto, @Request() req) {
-    // O ID do professor é extraído do payload do token JWT do usuário logado
     const teacherId = req.user.userId;
     return this.gradesService.create(createGradeDto, teacherId);
   }
 
-  /**
-   * Endpoint para consultar todas as notas de um aluno específico.
-   */
+ 
   @Roles(UserRole.ADMIN, UserRole.TEACHER, UserRole.GUARDIAN)
   @Get('students/:studentId/grades')
   @ApiOperation({ summary: 'Lista todas as notas de um aluno. (Admin, Professor, Responsável)' })
@@ -65,9 +60,7 @@ export class GradesController {
     return this.gradesService.findAllByStudent(studentId);
   }
 
-  /**
-   * Endpoint para o próprio aluno logado consultar suas notas.
-   */
+ 
   @Roles(UserRole.STUDENT)
   @Get('my-grades')
   @ApiOperation({ summary: 'Consulta as notas do próprio usuário logado.' })
@@ -77,9 +70,6 @@ export class GradesController {
     return this.gradesService.findAllByStudent(studentId);
   }
 
-  /**
-   * Endpoint para atualizar uma nota existente.
-   */
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Patch('grades/:id')
   @ApiOperation({ summary: 'Atualiza uma nota existente (acesso: Admin e Professor).' })
@@ -93,9 +83,7 @@ export class GradesController {
     return this.gradesService.update(id, updateGradeDto);
   }
 
-  /**
-   * Endpoint para remover uma nota.
-   */
+ 
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Delete('grades/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
