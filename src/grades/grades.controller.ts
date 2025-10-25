@@ -31,7 +31,7 @@ import {
 @ApiTags('Notas (Grades)')
 @ApiBearerAuth() 
 @UseGuards(AuthGuard('jwt'), RolesGuard) 
-@Controller() /
+@Controller()
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 

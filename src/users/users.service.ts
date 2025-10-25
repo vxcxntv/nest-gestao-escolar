@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { 
+  Injectable, 
+  NotFoundException,
+  UnauthorizedException,
+  BadRequestException 
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
