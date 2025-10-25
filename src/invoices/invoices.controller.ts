@@ -33,7 +33,7 @@ import { InvoicesService } from './invoices.service';
 
 @ApiTags('Financeiro (Faturas e Relatórios)')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(RolesGuard)
 @Controller() // Controller raiz (sem prefixo), pois as rotas usam prefixos customizados (/invoices, /reports)
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
@@ -84,7 +84,8 @@ export class InvoicesController {
 
   @Get('students/:studentId/invoices')
   @ApiOperation({
-    summary: 'Lista todas as faturas de um aluno. Acessível por Admin/Professor.',
+    summary:
+      'Lista todas as faturas de um aluno. Acessível por Admin/Professor.',
   })
   @ApiResponse({ status: 200, description: 'Faturas do aluno listadas.' })
   findAllByStudent(
@@ -98,9 +99,14 @@ export class InvoicesController {
 
   @Post('invoices/batch')
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Cria faturas em lote para todos os alunos de uma turma.' })
+  @ApiOperation({
+    summary: 'Cria faturas em lote para todos os alunos de uma turma.',
+  })
   @ApiBody({ type: CreateBatchInvoiceDto })
-  @ApiResponse({ status: 201, description: 'Faturas geradas em lote com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Faturas geradas em lote com sucesso.',
+  })
   createBatch(@Body() dto: CreateBatchInvoiceDto) {
     return this.invoicesService.createBatch(dto);
   }
@@ -108,7 +114,9 @@ export class InvoicesController {
   @Post('invoices/:id/pay')
   @HttpCode(HttpStatus.OK)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Marca uma fatura como PAGA e define a data de pagamento.' })
+  @ApiOperation({
+    summary: 'Marca uma fatura como PAGA e define a data de pagamento.',
+  })
   @ApiResponse({ status: 200, description: 'Fatura marcada como paga.' })
   markAsPaid(@Param('id', ParseUUIDPipe) id: string) {
     return this.invoicesService.markAsPaid(id);
@@ -128,7 +136,8 @@ export class InvoicesController {
   @Get('reports/financial/revenue')
   @Roles(UserRole.ADMIN)
   @ApiOperation({
-    summary: 'Relatório de Receita Total: Calcula o faturamento de faturas PAGAS em um período.',
+    summary:
+      'Relatório de Receita Total: Calcula o faturamento de faturas PAGAS em um período.',
   })
   @ApiQuery({ name: 'startDate', type: String, example: '2025-01-01' })
   @ApiQuery({ name: 'endDate', type: String, example: '2025-12-31' })

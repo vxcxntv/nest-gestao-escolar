@@ -33,7 +33,7 @@ import { UserRole } from './models/user.model';
 @ApiTags('Usuários') 
 @ApiBearerAuth('access-token') 
 @Controller('users')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

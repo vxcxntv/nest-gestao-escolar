@@ -1,7 +1,25 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query,
-  ParseUUIDPipe, HttpCode, HttpStatus,} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import {ApiBearerAuth, ApiOperation, ApiResponse, ApiTags,} from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { UserRole } from 'src/users/models/user.model';
@@ -13,7 +31,7 @@ import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 @ApiTags('Avisos')
 @ApiBearerAuth()
 @Controller('announcements')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(RolesGuard)
 export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 

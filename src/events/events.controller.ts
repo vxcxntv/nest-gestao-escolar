@@ -1,5 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseUUIDPipe } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags, ApiBody, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiTags,
+  ApiBody,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
@@ -12,7 +31,7 @@ import { FilterEventDto } from './dto/filter-event.dto';
 @ApiTags('Eventos do Calendário')
 @ApiBearerAuth()
 @Controller('events')
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(RolesGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
@@ -21,15 +40,23 @@ export class EventsController {
   @ApiOperation({ summary: 'Criar um novo evento no calendário escolar' })
   @ApiBody({ type: CreateEventDto })
   @ApiResponse({ status: 201, description: 'Evento criado com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado. Apenas administradores.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado. Apenas administradores.',
+  })
   create(@Body() createEventDto: CreateEventDto) {
     return this.eventsService.create(createEventDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os eventos com filtros de período e tipo' })
+  @ApiOperation({
+    summary: 'Listar todos os eventos com filtros de período e tipo',
+  })
   @ApiQuery({ type: FilterEventDto })
-  @ApiResponse({ status: 200, description: 'Lista de eventos retornada com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de eventos retornada com sucesso.',
+  })
   findAll(@Query() filterDto: FilterEventDto) {
     return this.eventsService.findAll(filterDto);
   }
@@ -50,7 +77,10 @@ export class EventsController {
   @ApiBody({ type: UpdateEventDto })
   @ApiResponse({ status: 200, description: 'Evento atualizado com sucesso.' })
   @ApiResponse({ status: 404, description: 'Evento não encontrado.' })
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateEventDto: UpdateEventDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateEventDto: UpdateEventDto,
+  ) {
     return this.eventsService.update(id, updateEventDto);
   }
 

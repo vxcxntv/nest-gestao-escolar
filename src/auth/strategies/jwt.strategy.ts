@@ -12,9 +12,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // O Passport decodifica o token e nos entrega o payload
   async validate(payload: any) {
-    // O objeto retornado aqui será injetado no `request.user` de qualquer rota protegida
-    return { userId: payload.sub, email: payload.email, role: payload.role };
-  }
+  console.log('🎯 JWT Strategy EXECUTANDO - Payload:', payload);
+  
+  // ✅ Retorne o user baseado apenas no payload (SEM banco)
+  const user = {
+    userId: payload.sub,
+    email: payload.email,
+    role: payload.role
+  };
+  
+  console.log('✅ User que será injetado:', user);
+  return user;
+}
 }

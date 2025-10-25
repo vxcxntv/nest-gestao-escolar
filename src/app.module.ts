@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './common/guards/roles/roles.guard';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { UsersModule } from './users/users.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { AuthModule } from './auth/auth.module';
@@ -18,7 +18,7 @@ import { EventsModule } from './events/events.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, 
+      isGlobal: true,
     }),
     SequelizeModule.forRoot({
       dialect: process.env.DB_DIALECT as any,
@@ -27,8 +27,8 @@ import { EventsModule } from './events/events.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      autoLoadModels: true, 
-      synchronize: true, 
+      autoLoadModels: true,
+      synchronize: true,
     }),
     UsersModule,
     SubjectsModule,
@@ -46,7 +46,7 @@ import { EventsModule } from './events/events.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: JwtAuthGuard,
     },
   ],
 })
