@@ -1,5 +1,12 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger'; 
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../models/user.model';
 
 export class CreateUserDto {
@@ -30,12 +37,12 @@ export class CreateUserDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({
-    description: 'Papel/permissão do usuário no sistema',
-    enum: UserRole, // Mostra os valores permitidos
+  @ApiPropertyOptional({
+    description: 'Papel/permissão do usuário no sistema (opcional para registro público)',
+    enum: UserRole,
     example: UserRole.STUDENT,
   })
+  @IsOptional()
   @IsEnum(UserRole)
-  @IsNotEmpty()
-  role: UserRole;
+  role?: UserRole
 }
