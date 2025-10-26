@@ -14,7 +14,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { UserRole } from 'src/users/models/user.model';
@@ -34,51 +42,93 @@ export class AttendancesController {
   @Roles(UserRole.TEACHER)
   @HttpCode(HttpStatus.NO_CONTENT) // Retorna 204 No Content em caso de sucesso
   @ApiOperation({ summary: 'Registrar frequência de uma aula em lote (Batch)' })
-  @ApiBody({ type: CreateAttendanceDto, description: 'Dados da aula e lista de alunos presentes/ausentes.' })
-  @ApiResponse({ status: 204, description: 'Frequência registrada com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado. Apenas professores.' })
+  @ApiBody({
+    type: CreateAttendanceDto,
+    description: 'Dados da aula e lista de alunos presentes/ausentes.',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Frequência registrada com sucesso.',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado. Apenas professores.',
+  })
   create(@Body() createAttendanceDto: CreateAttendanceDto) {
     return this.attendancesService.createBatch(createAttendanceDto);
   }
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  @ApiOperation({ summary: 'Listar registros de frequência com filtros e paginação' })
-  @ApiQuery({ type: FilterAttendanceDto, description: 'Filtros para data, turma e disciplina.' })
-  @ApiResponse({ status: 200, description: 'Registros de frequência retornados com sucesso.' })
+  @ApiOperation({
+    summary: 'Listar registros de frequência com filtros e paginação',
+  })
+  @ApiQuery({
+    type: FilterAttendanceDto,
+    description: 'Filtros para data, turma e disciplina.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Registros de frequência retornados com sucesso.',
+  })
   findAll(@Query() filterDto: FilterAttendanceDto) {
     return this.attendancesService.findAll(filterDto);
   }
-  
+
   @Get('students/:studentId')
   @ApiOperation({ summary: 'Consultar o histórico de frequência de um aluno' })
-  @ApiResponse({ status: 200, description: 'Histórico de frequência do aluno retornado.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Histórico de frequência do aluno retornado.',
+  })
   // O service fará a validação se é Admin, Professor ou o próprio aluno/responsável
-  findStudentHistory(@Param('studentId', ParseUUIDPipe) studentId: string, @Request() req) {
-      return this.attendancesService.findStudentHistory(studentId, req.user);
+  findStudentHistory(
+    @Param('studentId', ParseUUIDPipe) studentId: string,
+    @Request() req,
+  ) {
+    return this.attendancesService.findStudentHistory(studentId, req.user);
   }
 
   @Get('classes/:classId/summary')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  @ApiOperation({ summary: 'Resumo de frequência de todos os alunos de uma turma' })
+  @ApiOperation({
+    summary: 'Resumo de frequência de todos os alunos de uma turma',
+  })
   @ApiParam({ name: 'classId', description: 'ID da turma' })
-  @ApiResponse({ status: 200, description: 'Resumo de frequência retornado com sucesso' })
+  @ApiResponse({
+    status: 200,
+    description: 'Resumo de frequência retornado com sucesso',
+  })
   getClassAttendanceSummary(@Param('classId') classId: string) {
     return this.attendancesService.getClassAttendanceSummary(classId);
   }
 
   @Patch(':id')
   @Roles(UserRole.TEACHER)
-  @ApiOperation({ summary: 'Atualizar/Corrigir um registro individual de frequência' })
+  @ApiOperation({
+    summary: 'Atualizar/Corrigir um registro individual de frequência',
+  })
   @ApiParam({ name: 'id', description: 'ID do registro de frequência' })
-  @ApiBody({ type: UpdateAttendanceDto, description: 'Dados para atualização do registro de frequência' })
-  @ApiResponse({ status: 200, description: 'Frequência atualizada com sucesso' })
-  @ApiResponse({ status: 404, description: 'Registro de frequência não encontrado' })
-  @ApiResponse({ status: 403, description: 'Sem permissão para editar esta frequência' })
+  @ApiBody({
+    type: UpdateAttendanceDto,
+    description: 'Dados para atualização do registro de frequência',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Frequência atualizada com sucesso',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Registro de frequência não encontrado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para editar esta frequência',
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
-    @Request() req
+    @Request() req,
   ) {
     return this.attendancesService.update(id, updateAttendanceDto, req.user);
   }
@@ -88,12 +138,15 @@ export class AttendancesController {
   @ApiOperation({ summary: 'Remover um registro individual de frequência' })
   @ApiParam({ name: 'id', description: 'ID do registro de frequência' })
   @ApiResponse({ status: 200, description: 'Frequência removida com sucesso' })
-  @ApiResponse({ status: 404, description: 'Registro de frequência não encontrado' })
-  @ApiResponse({ status: 403, description: 'Sem permissão para remover esta frequência' })
-  remove(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Request() req
-  ) {
+  @ApiResponse({
+    status: 404,
+    description: 'Registro de frequência não encontrado',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Sem permissão para remover esta frequência',
+  })
+  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
     return this.attendancesService.remove(id, req.user);
   }
 }

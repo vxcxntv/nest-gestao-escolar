@@ -8,6 +8,6 @@ import { Event } from './models/event.model';
   imports: [SequelizeModule.forFeature([Event])], // Registra o modelo
   controllers: [EventsController],
   providers: [EventsService],
-  exports: [EventsService]
+  exports: [EventsService],
 })
 export class EventsModule {}

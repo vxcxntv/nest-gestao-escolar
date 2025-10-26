@@ -13,7 +13,8 @@ export class CreateAnnouncementDto {
   content: string;
 
   @ApiProperty({
-    description: 'ID da turma (opcional). Se não for fornecido, o aviso é geral.',
+    description:
+      'ID da turma (opcional). Se não for fornecido, o aviso é geral.',
     required: false,
   })
   @IsOptional()

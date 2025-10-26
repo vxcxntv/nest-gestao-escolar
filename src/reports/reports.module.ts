@@ -12,16 +12,16 @@ import { Invoice } from 'src/invoices/models/invoice.model';
 @Module({
   imports: [
     SequelizeModule.forFeature([
-      User, 
-      Class, 
-      Grade, 
-      Attendance, 
+      User,
+      Class,
+      Grade,
+      Attendance,
       Subject,
-      Invoice
-    ])
+      Invoice,
+    ]),
   ],
   controllers: [ReportsController],
   providers: [ReportsService],
-  exports: [ReportsService]
+  exports: [ReportsService],
 })
 export class ReportsModule {}

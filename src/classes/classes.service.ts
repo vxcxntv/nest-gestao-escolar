@@ -28,7 +28,8 @@ export class ClassesService {
    * Retorna uma lista com todas as turmas, incluindo os dados do professor de cada uma.
    * @returns Um array de turmas com seus respectivos professores.
    */
-  async findAll(filterDto: FilterClassDto) { // ASSINATURA CORRIGIDA
+  async findAll(filterDto: FilterClassDto) {
+    // ASSINATURA CORRIGIDA
     const { page = 1, limit = 10, name, academic_year, teacherId } = filterDto;
     const where: any = {};
 
@@ -57,7 +58,10 @@ export class ClassesService {
           attributes: { exclude: ['password_hash'] },
         },
       ],
-      order: [['academic_year', 'DESC'], ['name', 'ASC']],
+      order: [
+        ['academic_year', 'DESC'],
+        ['name', 'ASC'],
+      ],
     });
 
     return {
@@ -134,7 +138,10 @@ export class ClassesService {
    * @param classId O ID da turma.
    * @param subjectId O ID da disciplina a ser desassociada.
    */
-  async removeSubjectFromClass(classId: string, subjectId: string): Promise<void> {
+  async removeSubjectFromClass(
+    classId: string,
+    subjectId: string,
+  ): Promise<void> {
     const classInstance = await this.classModel.findByPk(classId);
     if (!classInstance) {
       throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
@@ -158,7 +165,10 @@ export class ClassesService {
    * @param classId O ID da turma.
    * @param studentId O ID do aluno a ser desmatriculado.
    */
-  async removeStudentFromClass(classId: string, studentId: string): Promise<void> {
+  async removeStudentFromClass(
+    classId: string,
+    studentId: string,
+  ): Promise<void> {
     const classInstance = await this.classModel.findByPk(classId);
     if (!classInstance) {
       throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);

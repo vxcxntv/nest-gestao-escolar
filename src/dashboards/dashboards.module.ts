@@ -12,16 +12,16 @@ import { Announcement } from 'src/announcements/models/announcement.model';
 @Module({
   imports: [
     SequelizeModule.forFeature([
-      User, 
-      Class, 
-      Invoice, 
-      Grade, 
-      Attendance, 
-      Announcement
-    ])
+      User,
+      Class,
+      Invoice,
+      Grade,
+      Attendance,
+      Announcement,
+    ]),
   ],
   controllers: [DashboardsController],
   providers: [DashboardsService],
-  exports: [DashboardsService]
+  exports: [DashboardsService],
 })
 export class DashboardsModule {}

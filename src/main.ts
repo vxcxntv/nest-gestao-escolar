@@ -8,11 +8,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Habilita validação global (usa os decorators do class-validator)
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // remove propriedades não esperadas do DTO
-    forbidNonWhitelisted: true, // lança erro se receber campo inválido
-    transform: true, // converte tipos automaticamente (ex: string -> number)
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // remove propriedades não esperadas do DTO
+      forbidNonWhitelisted: true, // lança erro se receber campo inválido
+      transform: true, // converte tipos automaticamente (ex: string -> number)
+    }),
+  );
 
   // Filtro global de exceções - AGORA ATIVADO
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -20,21 +22,35 @@ async function bootstrap() {
   // Configuração do Swagger
   const config = new DocumentBuilder()
     .setTitle('Plataforma de Gestão Escolar/Universitária API')
-    .setDescription('Documentação completa para a API RESTful da plataforma de gestão, cobrindo módulos Acadêmicos, Financeiros e de Comunicação.')
+    .setDescription(
+      'Documentação completa para a API RESTful da plataforma de gestão, cobrindo módulos Acadêmicos, Financeiros e de Comunicação.',
+    )
     .setVersion('1.0')
     .addBearerAuth(
-        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
-        'access-token', // Nome de referência que usaremos para proteger as rotas
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', in: 'header' },
+      'access-token', // Nome de referência que usaremos para proteger as rotas
     )
     .addTag('Autenticação', 'Endpoints para login e gestão de tokens JWT')
-    .addTag('Usuários', 'CRUD e gestão de perfis (Admin, Professor, Aluno, Responsável)')
+    .addTag(
+      'Usuários',
+      'CRUD e gestão de perfis (Admin, Professor, Aluno, Responsável)',
+    )
     .addTag('Classes', 'Gestão de turmas, matrículas e associações')
     .addTag('Disciplinas', 'Gestão de matérias e currículo')
     .addTag('Notas (Grades)', 'Lançamento e consulta de notas')
-    .addTag('Frequência (Attendances)', 'Registro e consulta de presenças/faltas')
+    .addTag(
+      'Frequência (Attendances)',
+      'Registro e consulta de presenças/faltas',
+    )
     .addTag('Avisos', 'Comunicação oficial da escola/universidade')
-    .addTag('Financeiro (Faturas e Relatórios)', 'Gestão de mensalidades e pagamentos')
-    .addTag('Relatórios Acadêmicos e Financeiros', 'Agregação de dados para histórico e desempenho')
+    .addTag(
+      'Financeiro (Faturas e Relatórios)',
+      'Gestão de mensalidades e pagamentos',
+    )
+    .addTag(
+      'Relatórios Acadêmicos e Financeiros',
+      'Agregação de dados para histórico e desempenho',
+    )
     .addTag('Dashboards', 'Resumo de dados por perfil')
     .addTag('Eventos do Calendário', 'Gestão de feriados e eventos escolares')
     .build();

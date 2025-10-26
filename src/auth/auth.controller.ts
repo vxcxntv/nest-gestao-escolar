@@ -50,6 +50,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Autenticar usuário e obter token JWT' })
   @ApiBody({

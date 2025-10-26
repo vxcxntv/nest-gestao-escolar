@@ -1,5 +1,12 @@
-import {ApiProperty} from '@nestjs/swagger';
-import {IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID, Min,} from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateInvoiceDto {
   @ApiProperty({

@@ -17,10 +17,10 @@ class StudentAttendanceDto {
   @IsNotEmpty()
   studentId: string;
 
-  @ApiProperty({ 
-    description: 'Status da frequência.', 
-    enum: AttendanceStatus, 
-    example: AttendanceStatus.PRESENT 
+  @ApiProperty({
+    description: 'Status da frequência.',
+    enum: AttendanceStatus,
+    example: AttendanceStatus.PRESENT,
   })
   @IsEnum(AttendanceStatus)
   @IsNotEmpty()
@@ -29,12 +29,17 @@ class StudentAttendanceDto {
 
 // DTO principal para a requisição em lote
 export class CreateAttendanceDto {
-  @ApiProperty({ description: 'Data da aula no formato YYYY-MM-DD.', example: '2025-10-16' })
+  @ApiProperty({
+    description: 'Data da aula no formato YYYY-MM-DD.',
+    example: '2025-10-16',
+  })
   @IsDateString()
   @IsNotEmpty()
   date: string;
 
-  @ApiProperty({ description: 'ID da Turma (Class) à qual o registro pertence.' })
+  @ApiProperty({
+    description: 'ID da Turma (Class) à qual o registro pertence.',
+  })
   @IsUUID()
   @IsNotEmpty()
   classId: string;
@@ -44,9 +49,9 @@ export class CreateAttendanceDto {
   @IsNotEmpty()
   subjectId: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Lista de presença/falta dos alunos.',
-    type: [StudentAttendanceDto]
+    type: [StudentAttendanceDto],
   })
   @IsArray()
   @ValidateNested({ each: true }) // Valida cada objeto dentro do array

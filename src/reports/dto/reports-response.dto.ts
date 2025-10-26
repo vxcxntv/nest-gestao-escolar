@@ -5,8 +5,8 @@ export class StudentHistoryResponse {
     example: {
       id: 'uuid',
       name: 'João Silva',
-      email: 'joao.silva@escola.com'
-    }
+      email: 'joao.silva@escola.com',
+    },
   })
   student: any;
 
@@ -17,8 +17,8 @@ export class StudentHistoryResponse {
       attendanceRate: 85.5,
       totalAttendances: 100,
       presentAttendances: 85,
-      absentAttendances: 15
-    }
+      absentAttendances: 15,
+    },
   })
   summary: {
     averageGrade: number;
@@ -37,7 +37,7 @@ export class StudentHistoryResponse {
         description: 'Prova Bimestral',
         subject: 'Matemática',
         teacher: 'Prof. Silva',
-        createdAt: '2024-01-15T10:00:00Z'
+        createdAt: '2024-01-15T10:00:00Z',
       },
       {
         id: 'uuid',
@@ -45,9 +45,9 @@ export class StudentHistoryResponse {
         description: 'Trabalho em Grupo',
         subject: 'História',
         teacher: 'Prof. Santos',
-        createdAt: '2024-01-10T14:30:00Z'
-      }
-    ]
+        createdAt: '2024-01-10T14:30:00Z',
+      },
+    ],
   })
   grades: any[];
 
@@ -58,16 +58,16 @@ export class StudentHistoryResponse {
         date: '2024-01-15',
         status: 'present',
         class: 'Turma 301',
-        subject: 'Matemática'
+        subject: 'Matemática',
       },
       {
         id: 'uuid',
         date: '2024-01-14',
         status: 'absent',
         class: 'Turma 301',
-        subject: 'História'
-      }
-    ]
+        subject: 'História',
+      },
+    ],
   })
   attendances: any[];
 }
@@ -77,8 +77,8 @@ export class ClassPerformanceResponse {
     example: {
       id: 'uuid',
       name: 'Turma 301',
-      academicYear: 2024
-    }
+      academicYear: 2024,
+    },
   })
   class: any;
 
@@ -86,8 +86,8 @@ export class ClassPerformanceResponse {
     example: {
       totalStudents: 25,
       classAverage: 7.8,
-      classAttendanceRate: 88.2
-    }
+      classAttendanceRate: 88.2,
+    },
   })
   summary: {
     totalStudents: number;
@@ -101,31 +101,31 @@ export class ClassPerformanceResponse {
         student: {
           id: 'uuid',
           name: 'Maria Santos',
-          email: 'maria.santos@escola.com'
+          email: 'maria.santos@escola.com',
         },
         averageGrade: 8.5,
         attendanceRate: 92.0,
         totalGrades: 10,
-        totalAttendances: 50
+        totalAttendances: 50,
       },
       {
         student: {
           id: 'uuid',
           name: 'Pedro Oliveira',
-          email: 'pedro.oliveira@escola.com'
+          email: 'pedro.oliveira@escola.com',
         },
         averageGrade: 7.2,
         attendanceRate: 85.5,
         totalGrades: 8,
-        totalAttendances: 45
-      }
-    ]
+        totalAttendances: 45,
+      },
+    ],
   })
   students: any[];
 }
 
 export class FinancialReportResponse {
-  @ApiProperty({ example: 12500.50 })
+  @ApiProperty({ example: 12500.5 })
   totalRevenue: number;
 
   @ApiProperty({ example: 45 })
@@ -144,17 +144,17 @@ export class FinancialReportResponse {
     example: [
       {
         month: '2024-01',
-        revenue: 12500.50,
+        revenue: 12500.5,
         paidInvoices: 120,
-        pendingInvoices: 45
+        pendingInvoices: 45,
       },
       {
         month: '2023-12',
-        revenue: 11800.00,
+        revenue: 11800.0,
         paidInvoices: 115,
-        pendingInvoices: 40
-      }
-    ]
+        pendingInvoices: 40,
+      },
+    ],
   })
   monthlyData: any[];
 }

@@ -7,15 +7,16 @@ export class ChangePasswordDto {
   @IsNotEmpty()
   currentPassword: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Nova senha (mínimo 6 caracteres)',
-    minLength: 6
+    minLength: 6,
   })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
   @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/, {
-    message: 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número'
+    message:
+      'A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número',
   })
   newPassword: string;
 

@@ -15,15 +15,30 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     try {
+      console.log('🔐 AuthService - Buscando usuário:', email);
+      
       const user = await this.usersService.findOneByEmail(email);
-
-      if (user && await bcrypt.compare(password, user.password_hash)) {
-        const { password_hash, ...result } = user.get({ plain: true });
-        return result;
+      console.log('🔐 AuthService - Usuário encontrado:', user ? user.email : 'NÃO ENCONTRADO');
+      
+      if (user) {
+        console.log('🔐 AuthService - Hash no banco:', user.password_hash);
+        console.log('🔐 AuthService - Senha para comparar:', password);
+        
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        console.log('🔐 AuthService - Bcrypt compare result:', isPasswordValid);
+        
+        if (isPasswordValid) {
+          const { password_hash, ...result } = user.get({ plain: true });
+          console.log('✅ AuthService - Senha válida');
+          return result;
+        } else {
+          console.log('❌ AuthService - Senha inválida');
+        }
       }
+      
       return null;
     } catch (error) {
-      // Se o usuário não for encontrado, retorna null
+      console.log('❌ AuthService - Erro:', error);
       return null;
     }
   }

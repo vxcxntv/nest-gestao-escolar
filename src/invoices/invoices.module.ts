@@ -6,9 +6,7 @@ import { InvoicesService } from './invoices.service';
 import { Invoice } from './models/invoice.model';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([Invoice, Class]),
-  ],
+  imports: [SequelizeModule.forFeature([Invoice, Class])],
   controllers: [InvoicesController],
   providers: [InvoicesService],
 })

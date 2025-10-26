@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize'; // Necessário para filtros
 import { Sequelize } from 'sequelize-typescript';
@@ -21,7 +25,7 @@ export class AttendancesService {
     private userModel: typeof User,
     @InjectModel(Subject)
     private subjectModel: typeof Subject,
-    private sequelize: Sequelize, 
+    private sequelize: Sequelize,
   ) {}
 
   async createBatch(createAttendanceDto: CreateAttendanceDto): Promise<void> {
@@ -46,7 +50,14 @@ export class AttendancesService {
   }
 
   async findAll(filterDto: FilterAttendanceDto) {
-    const { page = 1, limit = 10, classId, subjectId, studentId, dateFrom } = filterDto;
+    const {
+      page = 1,
+      limit = 10,
+      classId,
+      subjectId,
+      studentId,
+      dateFrom,
+    } = filterDto;
     const where: any = {};
 
     if (classId) where.classId = classId;
@@ -54,8 +65,8 @@ export class AttendancesService {
     if (studentId) where.studentId = studentId;
 
     if (dateFrom) {
-        // Filtra registros a partir da data especificada
-        where.date = { [Op.gte]: dateFrom };
+      // Filtra registros a partir da data especificada
+      where.date = { [Op.gte]: dateFrom };
     }
 
     const offset = (page - 1) * limit;
@@ -83,11 +94,14 @@ export class AttendancesService {
   async findStudentHistory(studentId: string, user: any) {
     // 1. Verificação de Permissão (Regra de Negócio)
     const isOwner = user.userId === studentId;
-    const isAuthorizedRole = user.role === UserRole.ADMIN || user.role === UserRole.TEACHER;
-    
+    const isAuthorizedRole =
+      user.role === UserRole.ADMIN || user.role === UserRole.TEACHER;
+
     // Se não é Admin, nem Professor, nem o próprio aluno/responsável, nega o acesso.
     if (!isOwner && !isAuthorizedRole) {
-        throw new ForbiddenException('Você não tem permissão para acessar o histórico de frequência deste aluno.');
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar o histórico de frequência deste aluno.',
+      );
     }
 
     // 2. Busca e Retorna os Registros
@@ -109,12 +123,14 @@ export class AttendancesService {
       include: [
         { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
         { model: Class, attributes: ['id', 'name', 'teacherId'] },
-        { model: Subject, attributes: ['id', 'name'] }
-      ]
+        { model: Subject, attributes: ['id', 'name'] },
+      ],
     });
 
     if (!attendance) {
-      throw new NotFoundException(`Registro de frequência com ID ${id} não encontrado`);
+      throw new NotFoundException(
+        `Registro de frequência com ID ${id} não encontrado`,
+      );
     }
 
     return attendance;
@@ -123,12 +139,21 @@ export class AttendancesService {
   /**
    * Atualiza um registro individual de frequência
    */
-  async update(id: string, updateAttendanceDto: UpdateAttendanceDto, user: any): Promise<Attendance> {
+  async update(
+    id: string,
+    updateAttendanceDto: UpdateAttendanceDto,
+    user: any,
+  ): Promise<Attendance> {
     const attendance = await this.findOne(id);
 
     // Verificar permissões: apenas o professor da turma pode editar
-    if (user.role === UserRole.TEACHER && attendance.class.teacherId !== user.userId) {
-      throw new ForbiddenException('Você só pode editar frequências das suas próprias turmas');
+    if (
+      user.role === UserRole.TEACHER &&
+      attendance.class.teacherId !== user.userId
+    ) {
+      throw new ForbiddenException(
+        'Você só pode editar frequências das suas próprias turmas',
+      );
     }
 
     await attendance.update(updateAttendanceDto);
@@ -138,12 +163,14 @@ export class AttendancesService {
       include: [
         { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
         { model: Class, attributes: ['id', 'name'] },
-        { model: Subject, attributes: ['id', 'name'] }
-      ]
+        { model: Subject, attributes: ['id', 'name'] },
+      ],
     });
 
     if (!updatedAttendance) {
-      throw new NotFoundException(`Registro de frequência com ID ${id} não encontrado`);
+      throw new NotFoundException(
+        `Registro de frequência com ID ${id} não encontrado`,
+      );
     }
 
     return updatedAttendance;
@@ -156,8 +183,13 @@ export class AttendancesService {
     const attendance = await this.findOne(id);
 
     // Verificar permissões: admin ou professor da turma
-    if (user.role === UserRole.TEACHER && attendance.class.teacherId !== user.userId) {
-      throw new ForbiddenException('Você só pode remover frequências das suas próprias turmas');
+    if (
+      user.role === UserRole.TEACHER &&
+      attendance.class.teacherId !== user.userId
+    ) {
+      throw new ForbiddenException(
+        'Você só pode remover frequências das suas próprias turmas',
+      );
     }
 
     await attendance.destroy();
@@ -169,12 +201,12 @@ export class AttendancesService {
   async getClassAttendanceSummary(classId: string): Promise<any> {
     const classInstance = await this.classModel.findByPk(classId, {
       include: [
-        { 
-          model: User, 
+        {
+          model: User,
           as: 'students',
-          attributes: ['id', 'name', 'email']
-        }
-      ]
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
     });
 
     if (!classInstance) {
@@ -184,53 +216,63 @@ export class AttendancesService {
     const summary = await Promise.all(
       classInstance.students.map(async (student) => {
         const attendances = await this.attendanceModel.findAll({
-          where: { 
+          where: {
             studentId: student.id,
-            classId 
-          }
+            classId,
+          },
         });
 
         const totalAttendances = attendances.length;
-        const presentAttendances = attendances.filter(a => a.status === AttendanceStatus.PRESENT).length;
+        const presentAttendances = attendances.filter(
+          (a) => a.status === AttendanceStatus.PRESENT,
+        ).length;
         const absentAttendances = totalAttendances - presentAttendances;
-        const attendanceRate = totalAttendances > 0 
-          ? (presentAttendances / totalAttendances) * 100 
-          : 0;
+        const attendanceRate =
+          totalAttendances > 0
+            ? (presentAttendances / totalAttendances) * 100
+            : 0;
 
         return {
           student: {
             id: student.id,
             name: student.name,
-            email: student.email
+            email: student.email,
           },
           totalAttendances,
           presentAttendances,
           absentAttendances,
-          attendanceRate: Number(attendanceRate.toFixed(2))
+          attendanceRate: Number(attendanceRate.toFixed(2)),
         };
-      })
+      }),
     );
 
-    const classTotalAttendances = summary.reduce((sum, student) => sum + student.totalAttendances, 0);
-    const classPresentAttendances = summary.reduce((sum, student) => sum + student.presentAttendances, 0);
-    const classAttendanceRate = classTotalAttendances > 0 
-      ? (classPresentAttendances / classTotalAttendances) * 100 
-      : 0;
+    const classTotalAttendances = summary.reduce(
+      (sum, student) => sum + student.totalAttendances,
+      0,
+    );
+    const classPresentAttendances = summary.reduce(
+      (sum, student) => sum + student.presentAttendances,
+      0,
+    );
+    const classAttendanceRate =
+      classTotalAttendances > 0
+        ? (classPresentAttendances / classTotalAttendances) * 100
+        : 0;
 
     return {
       class: {
         id: classInstance.id,
         name: classInstance.name,
-        academicYear: classInstance.academic_year
+        academicYear: classInstance.academic_year,
       },
       summary: {
         totalStudents: summary.length,
         classAttendanceRate: Number(classAttendanceRate.toFixed(2)),
         totalAttendances: classTotalAttendances,
         presentAttendances: classPresentAttendances,
-        absentAttendances: classTotalAttendances - classPresentAttendances
+        absentAttendances: classTotalAttendances - classPresentAttendances,
       },
-      students: summary
+      students: summary,
     };
   }
 }

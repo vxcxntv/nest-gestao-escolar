@@ -8,16 +8,9 @@ import { User } from 'src/users/models/user.model';
 import { Subject } from 'src/subjects/models/subject.model';
 
 @Module({
-  imports: [
-    SequelizeModule.forFeature([
-      Attendance,
-      Class,
-      User,
-      Subject
-    ])
-  ],
+  imports: [SequelizeModule.forFeature([Attendance, Class, User, Subject])],
   controllers: [AttendancesController],
   providers: [AttendancesService],
-  exports: [AttendancesService]
+  exports: [AttendancesService],
 })
 export class AttendancesModule {}

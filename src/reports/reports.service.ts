@@ -8,10 +8,10 @@ import { Attendance } from 'src/attendances/models/attendance.model';
 import { Subject } from 'src/subjects/models/subject.model';
 import { Invoice } from 'src/invoices/models/invoice.model';
 import { InvoiceStatus } from 'src/invoices/models/invoice.model';
-import { 
-  StudentHistoryResponse, 
+import {
+  StudentHistoryResponse,
   ClassPerformanceResponse,
-  FinancialReportResponse 
+  FinancialReportResponse,
 } from './dto/reports-response.dto';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class ReportsService {
 
   async getStudentHistory(studentId: string): Promise<StudentHistoryResponse> {
     const student = await this.userModel.findByPk(studentId, {
-      attributes: ['id', 'name', 'email']
+      attributes: ['id', 'name', 'email'],
     });
 
     if (!student) {
@@ -38,31 +38,33 @@ export class ReportsService {
       where: { studentId },
       include: [
         { model: Subject, attributes: ['id', 'name'] },
-        { model: User, as: 'teacher', attributes: ['id', 'name'] }
+        { model: User, as: 'teacher', attributes: ['id', 'name'] },
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
 
     const attendances = await this.attendanceModel.findAll({
       where: { studentId },
       include: [
         { model: Class, attributes: ['id', 'name'] },
-        { model: Subject, attributes: ['id', 'name'] }
+        { model: Subject, attributes: ['id', 'name'] },
       ],
-      order: [['date', 'DESC']]
+      order: [['date', 'DESC']],
     });
 
     // Calcular estatísticas
     const totalGrades = grades.length;
-    const averageGrade = totalGrades > 0 
-      ? grades.reduce((sum, grade) => sum + grade.value, 0) / totalGrades 
-      : 0;
+    const averageGrade =
+      totalGrades > 0
+        ? grades.reduce((sum, grade) => sum + grade.value, 0) / totalGrades
+        : 0;
 
     const totalAttendances = attendances.length;
-    const presentAttendances = attendances.filter(a => a.status === 'present').length;
-    const attendanceRate = totalAttendances > 0 
-      ? (presentAttendances / totalAttendances) * 100 
-      : 0;
+    const presentAttendances = attendances.filter(
+      (a) => a.status === 'present',
+    ).length;
+    const attendanceRate =
+      totalAttendances > 0 ? (presentAttendances / totalAttendances) * 100 : 0;
 
     return {
       student,
@@ -72,35 +74,37 @@ export class ReportsService {
         attendanceRate: Number(attendanceRate.toFixed(2)),
         totalAttendances,
         presentAttendances,
-        absentAttendances: totalAttendances - presentAttendances
+        absentAttendances: totalAttendances - presentAttendances,
       },
-      grades: grades.map(grade => ({
+      grades: grades.map((grade) => ({
         id: grade.id,
         value: grade.value,
         description: grade.description,
         subject: grade.subject?.name,
         teacher: grade.teacher?.name,
-        createdAt: grade.createdAt
+        createdAt: grade.createdAt,
       })),
-      attendances: attendances.map(att => ({
+      attendances: attendances.map((att) => ({
         id: att.id,
         date: att.date,
         status: att.status,
         class: att.class?.name,
-        subject: att.subject?.name
-      }))
+        subject: att.subject?.name,
+      })),
     };
   }
 
-  async getClassPerformance(classId: string): Promise<ClassPerformanceResponse> {
+  async getClassPerformance(
+    classId: string,
+  ): Promise<ClassPerformanceResponse> {
     const classInstance = await this.classModel.findByPk(classId, {
       include: [
-        { 
-          model: User, 
+        {
+          model: User,
           as: 'students',
-          attributes: ['id', 'name', 'email']
-        }
-      ]
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
     });
 
     if (!classInstance) {
@@ -111,58 +115,67 @@ export class ReportsService {
       classInstance.students.map(async (student) => {
         const grades = await this.gradeModel.findAll({
           where: { studentId: student.id },
-          attributes: ['value']
+          attributes: ['value'],
         });
 
         const attendances = await this.attendanceModel.findAll({
-          where: { 
+          where: {
             studentId: student.id,
-            classId 
-          }
+            classId,
+          },
         });
 
-        const averageGrade = grades.length > 0 
-          ? grades.reduce((sum, grade) => sum + grade.value, 0) / grades.length 
-          : 0;
+        const averageGrade =
+          grades.length > 0
+            ? grades.reduce((sum, grade) => sum + grade.value, 0) /
+              grades.length
+            : 0;
 
-        const attendanceRate = attendances.length > 0
-          ? (attendances.filter(a => a.status === 'present').length / attendances.length) * 100
-          : 0;
+        const attendanceRate =
+          attendances.length > 0
+            ? (attendances.filter((a) => a.status === 'present').length /
+                attendances.length) *
+              100
+            : 0;
 
         return {
           student: {
             id: student.id,
             name: student.name,
-            email: student.email
+            email: student.email,
           },
           averageGrade: Number(averageGrade.toFixed(2)),
           attendanceRate: Number(attendanceRate.toFixed(2)),
           totalGrades: grades.length,
-          totalAttendances: attendances.length
+          totalAttendances: attendances.length,
         };
-      })
+      }),
     );
 
-    const classAverage = performanceData.length > 0
-      ? performanceData.reduce((sum, data) => sum + data.averageGrade, 0) / performanceData.length
-      : 0;
+    const classAverage =
+      performanceData.length > 0
+        ? performanceData.reduce((sum, data) => sum + data.averageGrade, 0) /
+          performanceData.length
+        : 0;
 
-    const classAttendanceRate = performanceData.length > 0
-      ? performanceData.reduce((sum, data) => sum + data.attendanceRate, 0) / performanceData.length
-      : 0;
+    const classAttendanceRate =
+      performanceData.length > 0
+        ? performanceData.reduce((sum, data) => sum + data.attendanceRate, 0) /
+          performanceData.length
+        : 0;
 
     return {
       class: {
         id: classInstance.id,
         name: classInstance.name,
-        academicYear: classInstance.academic_year
+        academicYear: classInstance.academic_year,
       },
       summary: {
         totalStudents: performanceData.length,
         classAverage: Number(classAverage.toFixed(2)),
-        classAttendanceRate: Number(classAttendanceRate.toFixed(2))
+        classAttendanceRate: Number(classAttendanceRate.toFixed(2)),
       },
-      students: performanceData
+      students: performanceData,
     };
   }
 
@@ -170,15 +183,22 @@ export class ReportsService {
     const allInvoices = await this.invoiceModel.findAll();
 
     const totalRevenue = allInvoices
-      .filter(inv => inv.status === InvoiceStatus.PAID)
+      .filter((inv) => inv.status === InvoiceStatus.PAID)
       .reduce((sum, invoice) => sum + parseFloat(invoice.amount as any), 0);
 
-    const pendingInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.PENDING).length;
-    const paidInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.PAID).length;
-    const overdueInvoices = allInvoices.filter(inv => inv.status === InvoiceStatus.OVERDUE).length;
+    const pendingInvoices = allInvoices.filter(
+      (inv) => inv.status === InvoiceStatus.PENDING,
+    ).length;
+    const paidInvoices = allInvoices.filter(
+      (inv) => inv.status === InvoiceStatus.PAID,
+    ).length;
+    const overdueInvoices = allInvoices.filter(
+      (inv) => inv.status === InvoiceStatus.OVERDUE,
+    ).length;
 
     const totalInvoices = allInvoices.length;
-    const collectionRate = totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
+    const collectionRate =
+      totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
 
     // Simular dados mensais (em produção, você faria uma consulta agrupada por mês)
     const monthlyData = [
@@ -186,8 +206,8 @@ export class ReportsService {
         month: '2024-01',
         revenue: totalRevenue,
         paidInvoices,
-        pendingInvoices
-      }
+        pendingInvoices,
+      },
     ];
 
     return {
@@ -196,7 +216,7 @@ export class ReportsService {
       paidInvoices,
       overdueInvoices,
       collectionRate: Number(collectionRate.toFixed(2)),
-      monthlyData
+      monthlyData,
     };
   }
 
@@ -224,7 +244,13 @@ export class ReportsService {
         status: InvoiceStatus.PENDING,
         dueDate: { [Op.lt]: new Date() }, // Vencidas (data de vencimento < data atual)
       },
-      include: [{ model: this.userModel, as: 'student', attributes: ['id', 'name', 'email'] }],
+      include: [
+        {
+          model: this.userModel,
+          as: 'student',
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
       order: [['dueDate', 'ASC']],
     });
   }

@@ -18,7 +18,7 @@ export class FilterAttendanceDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   subjectId?: string;
-  
+
   @ApiProperty({
     required: false,
     description: 'Filtrar por ID de um Aluno específico.',

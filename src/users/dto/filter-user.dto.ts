@@ -39,7 +39,8 @@ export class FilterUserDto extends PaginationDto {
 
   @ApiProperty({
     required: false,
-    description: 'Filtrar usuários por e-mail (busca parcial, case-insensitive)',
+    description:
+      'Filtrar usuários por e-mail (busca parcial, case-insensitive)',
     example: 'joao@email.com',
   })
   @IsOptional()

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsDateString, IsNotEmpty, IsNumber, IsString, IsUUID, Min,} from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateBatchInvoiceDto {
   @ApiProperty({
@@ -23,7 +30,7 @@ export class CreateBatchInvoiceDto {
     description: 'Valor a ser cobrado de cada aluno.',
     example: 800.0,
   })
-  @IsNumber({maxDecimalPlaces: 2})
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01)
   amount: number;
 

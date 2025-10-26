@@ -1,8 +1,8 @@
-import { 
-  Injectable, 
+import {
+  Injectable,
   NotFoundException,
   UnauthorizedException,
-  BadRequestException 
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcrypt';
@@ -39,13 +39,7 @@ export class UsersService {
 
   // findAll COM FILTROS E PAGINAÇÃO
   async findAll(filterDto: FilterUserDto) {
-    const {
-      page = 1,
-      limit = 10,
-      name,
-      email,
-      role,
-    } = filterDto;
+    const { page = 1, limit = 10, name, email, role } = filterDto;
 
     const where: any = {};
 
@@ -110,13 +104,13 @@ export class UsersService {
     if (updateUserDto.password) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(updateUserDto.password, salt);
-      
+
       const [affected, [updatedUser]] = await this.userModel.update(
         { ...updateUserDto, password_hash: hashedPassword },
         {
           where: { id },
           returning: true,
-        }
+        },
       );
 
       if (affected === 0) {
@@ -126,10 +120,13 @@ export class UsersService {
       const { password_hash, ...result } = updatedUser.get({ plain: true });
       return result as User;
     } else {
-      const [affected, [updatedUser]] = await this.userModel.update(updateUserDto, {
-        where: { id },
-        returning: true,
-      });
+      const [affected, [updatedUser]] = await this.userModel.update(
+        updateUserDto,
+        {
+          where: { id },
+          returning: true,
+        },
+      );
 
       if (affected === 0) {
         throw new NotFoundException(`Usuário com ID ${id} não encontrado.`);
@@ -147,17 +144,20 @@ export class UsersService {
   }
 
   // Alterar senha do usuário logado
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
     const user = await this.userModel.findByPk(userId);
-    
+
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
     // Verificar se a senha atual está correta
     const isCurrentPasswordValid = await bcrypt.compare(
-      changePasswordDto.currentPassword, 
-      user.password_hash
+      changePasswordDto.currentPassword,
+      user.password_hash,
     );
 
     if (!isCurrentPasswordValid) {
@@ -165,13 +165,20 @@ export class UsersService {
     }
 
     // Verificar se as novas senhas coincidem
-    if (changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword) {
-      throw new BadRequestException('A nova senha e a confirmação não coincidem');
+    if (
+      changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword
+    ) {
+      throw new BadRequestException(
+        'A nova senha e a confirmação não coincidem',
+      );
     }
 
     // Criptografar a nova senha
     const salt = await bcrypt.genSalt();
-    const hashedNewPassword = await bcrypt.hash(changePasswordDto.newPassword, salt);
+    const hashedNewPassword = await bcrypt.hash(
+      changePasswordDto.newPassword,
+      salt,
+    );
 
     await user.update({ password_hash: hashedNewPassword });
 

@@ -17,7 +17,7 @@ export class CreateClassDto {
   })
   @IsNumber()
   @IsNotEmpty()
-  @Type(() => Number) 
+  @Type(() => Number)
   academic_year: number;
 
   @ApiProperty({

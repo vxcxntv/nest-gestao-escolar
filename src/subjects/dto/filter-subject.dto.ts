@@ -5,7 +5,8 @@ import { PaginationDto } from 'src/common/dto/pagination.dto'; // Assumindo este
 export class FilterSubjectDto extends PaginationDto {
   @ApiProperty({
     required: false,
-    description: 'Filtrar por nome da disciplina (busca parcial, case-insensitive).',
+    description:
+      'Filtrar por nome da disciplina (busca parcial, case-insensitive).',
   })
   @IsOptional()
   @IsString()

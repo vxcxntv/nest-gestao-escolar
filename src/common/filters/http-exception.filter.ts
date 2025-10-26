@@ -30,7 +30,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // Log do erro
     this.logger.error(
       `HTTP Status: ${status} - Error: ${JSON.stringify(message)} - Path: ${request.url}`,
-      exception instanceof Error ? exception.stack : ''
+      exception instanceof Error ? exception.stack : '',
     );
 
     // Formatar resposta de erro
@@ -40,8 +40,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message: typeof message === 'string' ? message : (message as any).message || 'Erro interno do servidor',
-      ...(typeof message === 'object' && { details: message })
+      message:
+        typeof message === 'string'
+          ? message
+          : (message as any).message || 'Erro interno do servidor',
+      ...(typeof message === 'object' && { details: message }),
     };
 
     response.status(status).json(errorResponse);

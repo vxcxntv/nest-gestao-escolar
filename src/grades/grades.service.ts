@@ -19,10 +19,13 @@ export class GradesService {
    * @param teacherId ID do professor (obtido do usuário autenticado).
    * @returns A nota criada.
    */
-  async create(createGradeDto: CreateGradeDto, teacherId: string): Promise<Grade> {
+  async create(
+    createGradeDto: CreateGradeDto,
+    teacherId: string,
+  ): Promise<Grade> {
     const gradeData = {
       ...createGradeDto,
-      teacherId, 
+      teacherId,
     };
     return this.gradeModel.create(gradeData);
   }
@@ -58,8 +61,16 @@ export class GradesService {
     const grade = await this.gradeModel.findByPk(id, {
       include: [
         { model: Subject },
-        { model: User, as: 'student', attributes: { exclude: ['password_hash'] } },
-        { model: User, as: 'teacher', attributes: { exclude: ['password_hash'] } },
+        {
+          model: User,
+          as: 'student',
+          attributes: { exclude: ['password_hash'] },
+        },
+        {
+          model: User,
+          as: 'teacher',
+          attributes: { exclude: ['password_hash'] },
+        },
       ],
     });
     if (!grade) {
@@ -74,7 +85,6 @@ export class GradesService {
     return this.findOne(id); // Retorna a nota atualizada com as associações
   }
 
-  
   async remove(id: string): Promise<void> {
     const grade = await this.findOne(id);
     await grade.destroy();

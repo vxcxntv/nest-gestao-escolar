@@ -1,14 +1,19 @@
 import { Controller, Get, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { DashboardsService } from './dashboards.service';
-import { 
-  AdminDashboardResponse, 
-  TeacherDashboardResponse, 
-  StudentDashboardResponse 
+import {
+  AdminDashboardResponse,
+  TeacherDashboardResponse,
+  StudentDashboardResponse,
 } from './dto/dashboard-response.dto';
 
 @ApiTags('Dashboards')
@@ -21,10 +26,10 @@ export class DashboardsController {
   @Get('admin')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Obter dashboard administrativo' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Dashboard administrativo retornado com sucesso',
-    type: AdminDashboardResponse
+    type: AdminDashboardResponse,
   })
   getAdminDashboard(@Request() req) {
     return this.dashboardsService.getAdminDashboard();
@@ -33,10 +38,10 @@ export class DashboardsController {
   @Get('teacher')
   @Roles(UserRole.TEACHER)
   @ApiOperation({ summary: 'Obter dashboard do professor' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Dashboard do professor retornado com sucesso',
-    type: TeacherDashboardResponse
+    type: TeacherDashboardResponse,
   })
   getTeacherDashboard(@Request() req) {
     return this.dashboardsService.getTeacherDashboard(req.user.userId);
@@ -45,10 +50,10 @@ export class DashboardsController {
   @Get('student')
   @Roles(UserRole.STUDENT, UserRole.GUARDIAN) // Adicionamos GUARDIAN, pois responsáveis também veem este dashboard
   @ApiOperation({ summary: 'Obter dashboard do aluno/responsável' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Dashboard do aluno/responsável retornado com sucesso',
-    type: StudentDashboardResponse
+    type: StudentDashboardResponse,
   })
   getStudentDashboard(@Request() req) {
     return this.dashboardsService.getStudentDashboard(req.user.userId);

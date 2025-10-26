@@ -1,13 +1,17 @@
-import { BelongsToMany } from 'sequelize-typescript'; 
-import { Subject } from 'src/subjects/models/subject.model'; 
+import { BelongsToMany } from 'sequelize-typescript';
+import { Subject } from 'src/subjects/models/subject.model';
 import { ClassSubject } from './class-subject.model';
 import { User } from 'src/users/models/user.model';
 import { Enrollment } from './enrollment.model';
 
 import {
-  Table, Column, Model, DataType, ForeignKey, BelongsTo,
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
-
 
 @Table({ tableName: 'classes', timestamps: true })
 export class Class extends Model {
@@ -15,7 +19,6 @@ export class Class extends Model {
     type: DataType.UUID,
     defaultValue: DataType.UUIDV4,
     primaryKey: true,
-
   })
   declare id: string;
 
@@ -23,13 +26,13 @@ export class Class extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string; 
+  name: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  academic_year: number; 
+  academic_year: number;
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
@@ -40,9 +43,9 @@ export class Class extends Model {
   @BelongsTo(() => User)
   teacher: User;
 
-    @BelongsToMany(() => Subject, () => ClassSubject)
-    subjects: Subject[];
+  @BelongsToMany(() => Subject, () => ClassSubject)
+  subjects: Subject[];
 
-    @BelongsToMany(() => User, () => Enrollment)
-    students: User[];
+  @BelongsToMany(() => User, () => Enrollment)
+  students: User[];
 }

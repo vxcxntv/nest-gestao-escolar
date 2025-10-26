@@ -3,11 +3,11 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { AnnouncementsController } from './announcements.controller';
 import { AnnouncementsService } from './announcements.service';
 import { Announcement } from './models/announcement.model';
-import { UsersModule } from '../users/users.module'; 
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Announcement]), 
+    SequelizeModule.forFeature([Announcement]),
     forwardRef(() => UsersModule),
   ],
   controllers: [AnnouncementsController],

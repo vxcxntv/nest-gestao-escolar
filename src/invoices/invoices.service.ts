@@ -1,4 +1,9 @@
-import {ForbiddenException, Injectable, InternalServerErrorException, NotFoundException,} from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -43,11 +48,16 @@ export class InvoicesService {
       });
 
       if (!classToInvoice) {
-        throw new NotFoundException(`Turma com ID ${dto.classId} não encontrada.`);
+        throw new NotFoundException(
+          `Turma com ID ${dto.classId} não encontrada.`,
+        );
       }
 
       if (classToInvoice.students.length === 0) {
-        return { message: 'A turma não possui alunos matriculados. Nenhuma fatura foi criada.' };
+        return {
+          message:
+            'A turma não possui alunos matriculados. Nenhuma fatura foi criada.',
+        };
       }
 
       const invoicesToCreate = classToInvoice.students.map((student) => ({
@@ -116,7 +126,9 @@ export class InvoicesService {
   async findAllByStudent(studentId: string, user: any): Promise<Invoice[]> {
     // Permite o acesso se o usuário for ADMIN ou se for o próprio aluno/responsável.
     if (user.role !== UserRole.ADMIN && user.userId !== studentId) {
-      throw new ForbiddenException('Você não tem permissão para ver estas faturas.');
+      throw new ForbiddenException(
+        'Você não tem permissão para ver estas faturas.',
+      );
     }
     return this.invoiceModel.findAll({
       where: { studentId },
@@ -135,7 +147,9 @@ export class InvoicesService {
     }
 
     if (user.role !== UserRole.ADMIN && user.userId !== invoice.studentId) {
-      throw new ForbiddenException('Você não tem permissão para ver esta fatura.');
+      throw new ForbiddenException(
+        'Você não tem permissão para ver esta fatura.',
+      );
     }
     return invoice;
   }
@@ -144,10 +158,13 @@ export class InvoicesService {
    * Endpoint 6: PATCH /invoices/:id
    * Atualiza os dados de uma fatura.
    */
-  async update(id: string, updateInvoiceDto: UpdateInvoiceDto): Promise<Invoice> {
+  async update(
+    id: string,
+    updateInvoiceDto: UpdateInvoiceDto,
+  ): Promise<Invoice> {
     // Para atualizar, o usuário já deve ser admin (verificado no controller).
     const invoice = await this.invoiceModel.findByPk(id);
-     if (!invoice) {
+    if (!invoice) {
       throw new NotFoundException(`Fatura com ID ${id} não encontrada.`);
     }
     return invoice.update(updateInvoiceDto);
@@ -159,7 +176,7 @@ export class InvoicesService {
    */
   async markAsPaid(id: string): Promise<Invoice> {
     const invoice = await this.invoiceModel.findByPk(id);
-     if (!invoice) {
+    if (!invoice) {
       throw new NotFoundException(`Fatura com ID ${id} não encontrada.`);
     }
     return invoice.update({ status: InvoiceStatus.PAID, paidAt: new Date() });
@@ -171,7 +188,7 @@ export class InvoicesService {
    */
   async cancel(id: string): Promise<Invoice> {
     const invoice = await this.invoiceModel.findByPk(id);
-     if (!invoice) {
+    if (!invoice) {
       throw new NotFoundException(`Fatura com ID ${id} não encontrada.`);
     }
     return invoice.update({ status: InvoiceStatus.CANCELED, paidAt: null });
@@ -205,7 +222,9 @@ export class InvoicesService {
         status: InvoiceStatus.PENDING,
         dueDate: { [Op.lt]: new Date() }, // Onde a data de vencimento é menor que a data atual
       },
-      include: [{ model: User, as: 'student', attributes: ['id', 'name', 'email'] }],
+      include: [
+        { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
+      ],
       order: [['dueDate', 'ASC']],
     });
   }

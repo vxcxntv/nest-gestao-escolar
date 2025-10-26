@@ -35,7 +35,7 @@ export class Event extends Model {
     allowNull: false,
   })
   date: Date;
-  
+
   @Column({
     type: DataType.ENUM(...Object.values(EventType)),
     allowNull: false,

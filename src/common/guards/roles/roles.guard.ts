@@ -17,6 +17,7 @@ export class RolesGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
+
     const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -25,13 +26,26 @@ export class RolesGuard implements CanActivate {
     if (!requiredRoles) {
       return true;
     }
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
     
-    const { user } = context.switchToHttp().getRequest();
-    
-    if (!user || !user.role) {
+    if (!user) {
+      console.warn('⚠️ RolesGuard: User não encontrado no request');
       return false;
     }
     
-    return requiredRoles.some((role) => user.role?.includes(role));
+    if (!user.role) {
+      console.warn('⚠️ RolesGuard: User não tem role definida');
+      return false;
+    }
+
+    const hasRequiredRole = requiredRoles.some((role) => user.role === role);
+    
+    if (!hasRequiredRole) {
+      console.warn(`⚠️ RolesGuard: User role '${user.role}' não tem permissão. Roles necessárias:`, requiredRoles);
+    }
+    
+    return hasRequiredRole;
   }
 }

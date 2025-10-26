@@ -1,6 +1,11 @@
 // src/attendances/models/attendance.model.ts
 import {
-  Table, Column, Model, DataType, ForeignKey, BelongsTo
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
 import { Class } from 'src/classes/models/class.model';
 import { Subject } from 'src/subjects/models/subject.model';

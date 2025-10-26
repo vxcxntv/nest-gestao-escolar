@@ -9,11 +9,11 @@ import { Attendance } from 'src/attendances/models/attendance.model';
 import { Announcement } from 'src/announcements/models/announcement.model';
 import { UserRole } from 'src/users/models/user.model';
 import { InvoiceStatus } from 'src/invoices/models/invoice.model';
-import { 
-  AdminDashboardResponse, 
-  TeacherDashboardResponse, 
-  StudentDashboardResponse 
-} from './dto/dashboard-response.dto'; 
+import {
+  AdminDashboardResponse,
+  TeacherDashboardResponse,
+  StudentDashboardResponse,
+} from './dto/dashboard-response.dto';
 
 @Injectable()
 export class DashboardsService {
@@ -28,17 +28,17 @@ export class DashboardsService {
 
   async getAdminDashboard(): Promise<AdminDashboardResponse> {
     const totalStudents = await this.userModel.count({
-      where: { role: UserRole.STUDENT }
+      where: { role: UserRole.STUDENT },
     });
 
     const totalTeachers = await this.userModel.count({
-      where: { role: UserRole.TEACHER }
+      where: { role: UserRole.TEACHER },
     });
 
     const totalClasses = await this.classModel.count();
 
     const activeInvoices = await this.invoiceModel.count({
-      where: { status: InvoiceStatus.PENDING }
+      where: { status: InvoiceStatus.PENDING },
     });
 
     const startOfMonth = new Date();
@@ -46,15 +46,16 @@ export class DashboardsService {
     startOfMonth.setHours(0, 0, 0, 0);
 
     const paidInvoices = await this.invoiceModel.findAll({
-      where: { 
+      where: {
         status: InvoiceStatus.PAID,
-        paidAt: { [Op.gte]: startOfMonth }
-      }
+        paidAt: { [Op.gte]: startOfMonth },
+      },
     });
 
     const paidInvoicesThisMonth = paidInvoices.length;
-    const revenueThisMonth = paidInvoices.reduce((sum, invoice) => 
-      sum + parseFloat(invoice.amount as any), 0
+    const revenueThisMonth = paidInvoices.reduce(
+      (sum, invoice) => sum + parseFloat(invoice.amount as any),
+      0,
     );
 
     return {
@@ -67,54 +68,60 @@ export class DashboardsService {
     };
   }
 
-  async getTeacherDashboard(teacherId: string): Promise<TeacherDashboardResponse> {
+  async getTeacherDashboard(
+    teacherId: string,
+  ): Promise<TeacherDashboardResponse> {
     const myClasses = await this.classModel.count({
-      where: { teacherId }
+      where: { teacherId },
     });
 
     const pendingGrading = await this.gradeModel.count({
-      where: { 
+      where: {
         teacherId,
-        value: { [Op.is]: null } // Onde o valor é nulo (nota não lançada)
-      }
+        value: { [Op.is]: null }, // Onde o valor é nulo (nota não lançada)
+      },
     });
 
     // Próximas turmas (exemplo)
     const nextClasses = await this.classModel.findAll({
       where: { teacherId },
       limit: 5,
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
 
     const recentAnnouncements = await this.announcementModel.findAll({
       where: { authorId: teacherId },
       limit: 5,
       order: [['createdAt', 'DESC']],
-      include: [{ model: Class }]
+      include: [{ model: Class }],
     });
 
     return {
       myClasses,
       pendingGrading,
-      nextClasses: nextClasses.map(cls => ({
+      nextClasses: nextClasses.map((cls) => ({
         id: cls.id,
         name: cls.name,
-        academicYear: cls.academic_year // Usando academic_year (snake_case)
+        academicYear: cls.academic_year, // Usando academic_year (snake_case)
       })),
-      recentAnnouncements: recentAnnouncements.map(ann => ({
+      recentAnnouncements: recentAnnouncements.map((ann) => ({
         id: ann.id,
         title: ann.title,
-        createdAt: ann.createdAt
-      }))
+        createdAt: ann.createdAt,
+      })),
     };
   }
 
-  async getStudentDashboard(studentId: string): Promise<StudentDashboardResponse> {
+  async getStudentDashboard(
+    studentId: string,
+  ): Promise<StudentDashboardResponse> {
     const user = await this.userModel.findByPk(studentId, {
-      include: [{
-        model: Class,
-        as: 'enrolledClasses'
-      }]
+      include: [
+        {
+          model: Class,
+          as: 'enrolledClasses',
+        },
+      ],
     });
 
     const enrolledClasses = user?.enrolledClasses?.length || 0;
@@ -122,53 +129,57 @@ export class DashboardsService {
     // Calcular média de notas
     const grades = await this.gradeModel.findAll({
       where: { studentId },
-      attributes: ['value']
+      attributes: ['value'],
     });
-    
-    const averageGrade = grades.length > 0 
-      ? grades.reduce((sum, grade) => sum + grade.value, 0) / grades.length 
-      : 0;
+
+    const averageGrade =
+      grades.length > 0
+        ? grades.reduce((sum, grade) => sum + grade.value, 0) / grades.length
+        : 0;
 
     // Calcular taxa de frequência
     const attendances = await this.attendanceModel.findAll({
-      where: { studentId }
+      where: { studentId },
     });
-    
-    const attendanceRate = attendances.length > 0
-      ? (attendances.filter(a => a.status === 'present').length / attendances.length) * 100
-      : 0;
+
+    const attendanceRate =
+      attendances.length > 0
+        ? (attendances.filter((a) => a.status === 'present').length /
+            attendances.length) *
+          100
+        : 0;
 
     const upcomingAssignments = await this.gradeModel.findAll({
-      where: { 
+      where: {
         studentId,
-        value: { [Op.is]: null } // Onde o valor é nulo (nota não lançada)
+        value: { [Op.is]: null }, // Onde o valor é nulo (nota não lançada)
       },
       limit: 5,
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     });
 
     const recentGrades = await this.gradeModel.findAll({
       where: { studentId },
       limit: 5,
       order: [['createdAt', 'DESC']],
-      include: [{ model: User, as: 'teacher' }]
+      include: [{ model: User, as: 'teacher' }],
     });
 
     return {
       enrolledClasses,
       averageGrade: Number(averageGrade.toFixed(2)),
       attendanceRate: Number(attendanceRate.toFixed(2)),
-      upcomingAssignments: upcomingAssignments.map(ass => ({
+      upcomingAssignments: upcomingAssignments.map((ass) => ({
         id: ass.id,
         description: ass.description,
-        dueDate: ass.createdAt
+        dueDate: ass.createdAt,
       })),
-      recentGrades: recentGrades.map(grade => ({
+      recentGrades: recentGrades.map((grade) => ({
         id: grade.id,
         value: grade.value,
         description: grade.description,
-        teacher: grade.teacher?.name
-      }))
+        teacher: grade.teacher?.name,
+      })),
     };
   }
 }

@@ -7,7 +7,7 @@ export enum UserRole {
   ADMIN = 'admin',
   TEACHER = 'teacher',
   STUDENT = 'student',
-  GUARDIAN = 'guardian', 
+  GUARDIAN = 'guardian',
 }
 
 @Table({ tableName: 'users', timestamps: true })

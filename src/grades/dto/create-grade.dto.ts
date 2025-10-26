@@ -22,7 +22,8 @@ export class CreateGradeDto {
   value: number;
 
   @ApiProperty({
-    description: 'Descrição da avaliação (Ex: Prova Bimestral, Trabalho em Grupo)',
+    description:
+      'Descrição da avaliação (Ex: Prova Bimestral, Trabalho em Grupo)',
     example: 'Exame Final 1º Semestre',
   })
   @IsString()

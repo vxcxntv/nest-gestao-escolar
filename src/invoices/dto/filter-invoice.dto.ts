@@ -1,11 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsOptional,
-  IsUUID,
-  IsDateString,
-} from 'class-validator';
-import { PaginationDto } from 'src/common/dto/pagination.dto'; 
+import { IsEnum, IsOptional, IsUUID, IsDateString } from 'class-validator';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { InvoiceStatus } from '../models/invoice.model';
 
 export class FilterInvoiceDto extends PaginationDto {
@@ -19,7 +14,8 @@ export class FilterInvoiceDto extends PaginationDto {
 
   @ApiProperty({
     required: false,
-    description: 'Filtrar por status da fatura (pending, paid, overdue, canceled) [cite: 559, 561]',
+    description:
+      'Filtrar por status da fatura (pending, paid, overdue, canceled) [cite: 559, 561]',
     enum: InvoiceStatus,
   })
   @IsOptional()
