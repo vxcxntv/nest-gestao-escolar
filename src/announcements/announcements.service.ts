@@ -1,3 +1,4 @@
+// src/announcements/announcements.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
@@ -14,8 +15,6 @@ export class AnnouncementsService {
   constructor(
     @InjectModel(Announcement)
     private announcementModel: typeof Announcement,
-    @InjectModel(User)
-    private userModel: typeof User,
   ) {}
 
   async create(
@@ -26,6 +25,7 @@ export class AnnouncementsService {
       ...createAnnouncementDto,
       authorId,
     });
+    
     return this.findOne(announcement.id);
   }
 
@@ -40,19 +40,6 @@ export class AnnouncementsService {
       where.classId = classId;
     }
 
-    if (user.role === UserRole.STUDENT || user.role === UserRole.GUARDIAN) {
-      const studentWithClasses = await this.userModel.findByPk(user.userId, {
-        include: [{ model: Class, as: 'enrolledClasses' }],
-      });
-      const enrolledClassIds =
-        studentWithClasses?.enrolledClasses?.map((c) => c.id) || [];
-
-      where[Op.or] = [
-        { classId: null },
-        { classId: { [Op.in]: enrolledClassIds } },
-      ];
-    }
-
     const offset = (page - 1) * limit;
     const { rows, count } = await this.announcementModel.findAndCountAll({
       where,
@@ -63,7 +50,6 @@ export class AnnouncementsService {
         { model: Class, as: 'class' },
       ],
       order: [['createdAt', 'DESC']],
-      distinct: true,
     });
 
     return {
@@ -81,9 +67,11 @@ export class AnnouncementsService {
         { model: Class, as: 'class' },
       ],
     });
+    
     if (!announcement) {
       throw new NotFoundException(`Aviso com ID ${id} não encontrado.`);
     }
+    
     return announcement;
   }
 
@@ -96,8 +84,10 @@ export class AnnouncementsService {
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const announcement = await this.findOne(id);
     await announcement.destroy();
+    
+    return { message: 'Aviso removido com sucesso' };
   }
 }

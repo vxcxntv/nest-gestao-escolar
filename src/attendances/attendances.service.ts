@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize'; // Necessário para filtros
+import { Op } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { User, UserRole } from 'src/users/models/user.model';
 import { Subject } from 'src/subjects/models/subject.model';
@@ -28,10 +28,21 @@ export class AttendancesService {
     private sequelize: Sequelize,
   ) {}
 
-  async createBatch(createAttendanceDto: CreateAttendanceDto): Promise<void> {
+  async createBatch(createAttendanceDto: CreateAttendanceDto): Promise<{ message: string }> {
     const transaction = await this.sequelize.transaction();
     try {
       const { date, classId, subjectId, presences } = createAttendanceDto;
+
+      // Buscar nome da turma e disciplina para a mensagem
+      const classInstance = await this.classModel.findByPk(classId, {
+        attributes: ['name']
+      });
+      const subjectInstance = await this.subjectModel.findByPk(subjectId, {
+        attributes: ['name']
+      });
+
+      const className = classInstance?.name || 'Turma';
+      const subjectName = subjectInstance?.name || 'Disciplina';
 
       const recordsToCreate = presences.map((presence) => ({
         date,
@@ -43,6 +54,13 @@ export class AttendancesService {
 
       await this.attendanceModel.bulkCreate(recordsToCreate, { transaction });
       await transaction.commit();
+
+      const presentCount = presences.filter(p => p.status === 'present').length;
+      const absentCount = presences.filter(p => p.status === 'absent').length;
+
+      return { 
+        message: `Frequência registrada com sucesso para ${presences.length} alunos na turma ${className} (${subjectName}). Presentes: ${presentCount}, Ausentes: ${absentCount}` 
+      };
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -65,7 +83,6 @@ export class AttendancesService {
     if (studentId) where.studentId = studentId;
 
     if (dateFrom) {
-      // Filtra registros a partir da data especificada
       where.date = { [Op.gte]: dateFrom };
     }
 
@@ -118,29 +135,48 @@ export class AttendancesService {
   /**
    * Busca um registro de frequência individual pelo ID
    */
-  async findOne(id: string): Promise<Attendance> {
-    const attendance = await this.attendanceModel.findByPk(id, {
-      include: [
-        { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
-        { model: Class, attributes: ['id', 'name', 'teacherId'] },
-        { model: Subject, attributes: ['id', 'name'] },
-      ],
-    });
+  async findOne(id: number): Promise<Attendance> {
+  const attendance = await this.attendanceModel.findByPk(id, {
+    include: [
+      { 
+        model: User, 
+        as: 'student', 
+        attributes: ['id', 'name', 'email'] 
+      },
+      { 
+        model: Class, 
+        as: 'class', // ✅ ADICIONE 'as: class'
+        attributes: ['id', 'name', 'teacherId'] 
+      },
+      { 
+        model: Subject, 
+        as: 'subject', // ✅ ADICIONE 'as: subject' 
+        attributes: ['id', 'name'] 
+      },
+    ],
+  });
 
-    if (!attendance) {
-      throw new NotFoundException(
-        `Registro de frequência com ID ${id} não encontrado`,
-      );
-    }
-
-    return attendance;
+  if (!attendance) {
+    throw new NotFoundException(
+      `Registro de frequência com ID ${id} não encontrado`,
+    );
   }
+
+  console.log('🔍 DEBUG - Attendance encontrado:', {
+    id: attendance.id,
+    hasClass: !!attendance.class,
+    classTeacherId: attendance.class?.teacherId,
+    studentName: attendance.student?.name
+  });
+
+  return attendance;
+}
 
   /**
    * Atualiza um registro individual de frequência
    */
   async update(
-    id: string,
+    id: number,
     updateAttendanceDto: UpdateAttendanceDto,
     user: any,
   ): Promise<Attendance> {
@@ -158,28 +194,13 @@ export class AttendancesService {
 
     await attendance.update(updateAttendanceDto);
 
-    // Retornar o registro atualizado com as relações
-    const updatedAttendance = await this.attendanceModel.findByPk(id, {
-      include: [
-        { model: User, as: 'student', attributes: ['id', 'name', 'email'] },
-        { model: Class, attributes: ['id', 'name'] },
-        { model: Subject, attributes: ['id', 'name'] },
-      ],
-    });
-
-    if (!updatedAttendance) {
-      throw new NotFoundException(
-        `Registro de frequência com ID ${id} não encontrado`,
-      );
-    }
-
-    return updatedAttendance;
+    return this.findOne(id);
   }
 
   /**
    * Remove um registro individual de frequência
    */
-  async remove(id: string, user: any): Promise<void> {
+  async remove(id: number, user: any): Promise<{ message: string }> {
     const attendance = await this.findOne(id);
 
     // Verificar permissões: admin ou professor da turma
@@ -193,6 +214,8 @@ export class AttendancesService {
     }
 
     await attendance.destroy();
+    
+    return { message: 'Frequência removida com sucesso' };
   }
 
   /**

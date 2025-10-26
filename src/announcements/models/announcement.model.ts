@@ -1,3 +1,4 @@
+// src/announcements/models/announcement.model.ts
 import {
   Table,
   Column,
@@ -22,28 +23,25 @@ export class Announcement extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  title: string;
+  declare title: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: false,
   })
-  content: string;
+  declare content: string;
 
-  // Quem publicou o aviso
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })
-  authorId: string;
+  declare authorId: string;
 
   @BelongsTo(() => User)
-  author: User;
+  declare author: User;
 
-  // Para qual turma o aviso se destina (opcional)
-  // Se for nulo, é um aviso geral para todos.
   @ForeignKey(() => Class)
   @Column({ type: DataType.UUID, allowNull: true })
-  classId: string;
+  declare classId: string;
 
   @BelongsTo(() => Class)
-  class: Class;
+  declare class: Class;
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsEnum } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 export class FilterAnnouncementDto extends PaginationDto {
@@ -18,4 +18,22 @@ export class FilterAnnouncementDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   classId?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Filtrar avisos por prioridade',
+    enum: ['low', 'medium', 'high']
+  })
+  @IsOptional()
+  @IsEnum(['low', 'medium', 'high'])
+  priority?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Filtrar avisos por público-alvo',
+    example: 'students'
+  })
+  @IsOptional()
+  @IsString()
+  targetAudience?: string;
 }

@@ -40,21 +40,20 @@ export class AttendancesController {
 
   @Post()
   @Roles(UserRole.TEACHER)
-  @HttpCode(HttpStatus.NO_CONTENT) // Retorna 204 No Content em caso de sucesso
   @ApiOperation({ summary: 'Registrar frequência de uma aula em lote (Batch)' })
   @ApiBody({
     type: CreateAttendanceDto,
     description: 'Dados da aula e lista de alunos presentes/ausentes.',
   })
   @ApiResponse({
-    status: 204,
+    status: HttpStatus.CREATED,
     description: 'Frequência registrada com sucesso.',
   })
   @ApiResponse({
     status: 403,
     description: 'Acesso negado. Apenas professores.',
   })
-  create(@Body() createAttendanceDto: CreateAttendanceDto) {
+  async create(@Body() createAttendanceDto: CreateAttendanceDto) {
     return this.attendancesService.createBatch(createAttendanceDto);
   }
 
@@ -81,7 +80,6 @@ export class AttendancesController {
     status: 200,
     description: 'Histórico de frequência do aluno retornado.',
   })
-  // O service fará a validação se é Admin, Professor ou o próprio aluno/responsável
   findStudentHistory(
     @Param('studentId', ParseUUIDPipe) studentId: string,
     @Request() req,
@@ -99,7 +97,7 @@ export class AttendancesController {
     status: 200,
     description: 'Resumo de frequência retornado com sucesso',
   })
-  getClassAttendanceSummary(@Param('classId') classId: string) {
+  getClassAttendanceSummary(@Param('classId', ParseUUIDPipe) classId: string) {
     return this.attendancesService.getClassAttendanceSummary(classId);
   }
 
@@ -125,8 +123,8 @@ export class AttendancesController {
     status: 403,
     description: 'Sem permissão para editar esta frequência',
   })
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
+  async update(
+    @Param('id') id: number,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
     @Request() req,
   ) {
@@ -137,7 +135,15 @@ export class AttendancesController {
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({ summary: 'Remover um registro individual de frequência' })
   @ApiParam({ name: 'id', description: 'ID do registro de frequência' })
-  @ApiResponse({ status: 200, description: 'Frequência removida com sucesso' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Frequência removida com sucesso',
+    schema: {
+      example: {
+        message: 'Frequência removida com sucesso'
+      }
+    }
+  })
   @ApiResponse({
     status: 404,
     description: 'Registro de frequência não encontrado',
@@ -146,7 +152,7 @@ export class AttendancesController {
     status: 403,
     description: 'Sem permissão para remover esta frequência',
   })
-  remove(@Param('id', ParseUUIDPipe) id: string, @Request() req) {
+  async remove(@Param('id') id: number, @Request() req) {
     return this.attendancesService.remove(id, req.user);
   }
 }

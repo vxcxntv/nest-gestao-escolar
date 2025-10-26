@@ -1,3 +1,4 @@
+// src/announcements/announcements.controller.ts
 import {
   Controller,
   Get,
@@ -31,7 +32,7 @@ import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
 @ApiTags('Avisos')
 @ApiBearerAuth()
 @Controller('announcements')
-@UseGuards(RolesGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard)
 export class AnnouncementsController {
   constructor(private readonly announcementsService: AnnouncementsService) {}
 
@@ -78,12 +79,20 @@ export class AnnouncementsController {
 
   @Delete(':id')
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
-  @HttpCode(HttpStatus.NO_CONTENT) // Retorna status 204 em caso de sucesso
+  @HttpCode(HttpStatus.OK) // Mude para 200 para retornar a mensagem
   @ApiOperation({ summary: 'Remove um aviso' })
-  @ApiResponse({ status: 204, description: 'Aviso removido com sucesso.' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Aviso removido com sucesso.',
+    schema: {
+      example: {
+        message: 'Aviso removido com sucesso'
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Aviso não encontrado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.announcementsService.remove(id);
   }
 }

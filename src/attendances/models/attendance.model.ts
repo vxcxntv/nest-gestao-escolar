@@ -1,4 +1,3 @@
-// src/attendances/models/attendance.model.ts
 import {
   Table,
   Column,
@@ -19,35 +18,37 @@ export enum AttendanceStatus {
 @Table({ tableName: 'attendances', timestamps: true })
 export class Attendance extends Model {
   @Column({
-    type: DataType.DATEONLY, // Apenas a data, sem hora
+    type: DataType.DATEONLY,
     allowNull: false,
   })
-  date: Date;
+  declare date: Date;
 
   @Column({
     type: DataType.ENUM(...Object.values(AttendanceStatus)),
     allowNull: false,
   })
-  status: AttendanceStatus;
+  declare status: AttendanceStatus;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })
-  studentId: string;
+  declare studentId: string;
 
   @BelongsTo(() => User)
-  student: User;
-
+  declare student: User;
   @ForeignKey(() => Class)
   @Column({ type: DataType.UUID, allowNull: false })
-  classId: string;
+  declare classId: string;
 
   @BelongsTo(() => Class)
-  class: Class;
+  declare class: Class;
 
   @ForeignKey(() => Subject)
   @Column({ type: DataType.UUID, allowNull: false })
-  subjectId: string;
+  declare subjectId: string;
 
   @BelongsTo(() => Subject)
-  subject: Subject;
+  declare subject: Subject;
+
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
