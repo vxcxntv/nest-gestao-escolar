@@ -23,30 +23,34 @@ export class User extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string;
+  declare name: string; // ✅ Adicione DECLARE
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     unique: true,
   })
-  email: string;
+  declare email: string; // ✅ Adicione DECLARE
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  password_hash: string; // Nunca armazene a senha em texto plano!
+  declare password_hash: string; // ✅ Adicione DECLARE
 
   @Column({
     type: DataType.ENUM(...Object.values(UserRole)),
     allowNull: false,
   })
-  role: UserRole;
+  declare role: UserRole; // ✅ Adicione DECLARE
 
   @BelongsToMany(() => Class, () => Enrollment)
-  enrolledClasses: Class[];
+  declare enrolledClasses: Class[]; // ✅ Adicione DECLARE
 
   @HasMany(() => Class)
-  classes: Class[];
+  declare classes: Class[]; // ✅ Adicione DECLARE
+
+  // Adicione os timestamps se necessário
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }

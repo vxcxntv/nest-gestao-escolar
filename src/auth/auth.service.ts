@@ -17,12 +17,19 @@ export class AuthService {
     try {
       console.log('🔐 AuthService - Buscando usuário:', email);
       
-      const user = await this.usersService.findOneByEmail(email);
+      // USE findForAuth EM VEZ DE findOneByEmail
+      const user = await this.usersService.findForAuth(email);
       console.log('🔐 AuthService - Usuário encontrado:', user ? user.email : 'NÃO ENCONTRADO');
       
       if (user) {
-        console.log('🔐 AuthService - Hash no banco:', user.password_hash);
+        console.log('🔐 AuthService - Hash no banco:', user.password_hash ? 'PRESENTE' : 'AUSENTE');
         console.log('🔐 AuthService - Senha para comparar:', password);
+        
+        // Verificar se o usuário tem senha definida
+        if (!user.password_hash) {
+          console.log('❌ AuthService - Usuário não tem senha definida');
+          return null;
+        }
         
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         console.log('🔐 AuthService - Bcrypt compare result:', isPasswordValid);

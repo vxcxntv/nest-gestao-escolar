@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../models/user.model';
@@ -29,12 +30,15 @@ export class CreateUserDto {
 
   @ApiProperty({
     description: 'Senha (será hasheada antes de ser salva)',
-    example: 'senhaSegura123',
+    example: 'SenhaSegura123',
     minLength: 6,
   })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
+  @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d).*/, {
+    message: 'A senha deve conter pelo menos uma letra maiúscula, uma minúscula e um número',
+  })
   password: string;
 
   @ApiPropertyOptional({
@@ -44,5 +48,5 @@ export class CreateUserDto {
   })
   @IsOptional()
   @IsEnum(UserRole)
-  role?: UserRole
+  role?: UserRole;
 }

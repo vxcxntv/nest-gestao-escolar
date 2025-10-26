@@ -44,7 +44,7 @@ export class UsersService {
     const where: any = {};
 
     if (name) {
-      where.name = { [Op.iLike]: `%${name}%` }; // busca case-insensitive
+      where.name = { [Op.iLike]: `%${name}%` };
     }
     if (email) {
       where.email = { [Op.iLike]: `%${email}%` };
@@ -96,11 +96,26 @@ export class UsersService {
     return user;
   }
 
+  // Método específico para autenticação (COM password_hash)
+  async findForAuth(email: string): Promise<User | null> {
+    const user = await this.userModel.findOne({
+      where: { email },
+      // Não exclui o password_hash - necessário para validação
+    });
+
+    console.log('🔐 Buscando usuário para auth:', { 
+      email, 
+      userFound: !!user,
+      hasPasswordHash: user?.password_hash ? 'SIM' : 'NÃO' 
+    });
+
+    return user;
+  }
+
   // Atualizar usuário
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
 
-    // Se senha for atualizada, re-hash
     if (updateUserDto.password) {
       const salt = await bcrypt.genSalt();
       const hashedPassword = await bcrypt.hash(updateUserDto.password, salt);
@@ -154,7 +169,6 @@ export class UsersService {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    // Verificar se a senha atual está correta
     const isCurrentPasswordValid = await bcrypt.compare(
       changePasswordDto.currentPassword,
       user.password_hash,
@@ -164,7 +178,6 @@ export class UsersService {
       throw new UnauthorizedException('Senha atual incorreta');
     }
 
-    // Verificar se as novas senhas coincidem
     if (
       changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword
     ) {
@@ -173,7 +186,6 @@ export class UsersService {
       );
     }
 
-    // Criptografar a nova senha
     const salt = await bcrypt.genSalt();
     const hashedNewPassword = await bcrypt.hash(
       changePasswordDto.newPassword,

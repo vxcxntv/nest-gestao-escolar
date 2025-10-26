@@ -125,7 +125,8 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Usuário removido com sucesso.' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Usuário não encontrado.' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Acesso negado. Apenas administradores.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.usersService.remove(id);
+    return { message: 'Usuário deletado com sucesso' };
   }
 }
