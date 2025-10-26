@@ -114,10 +114,19 @@ export class ClassesService {
    * Remove uma turma do banco de dados.
    * @param id O ID da turma a ser removida.
    */
-  async remove(id: string): Promise<void> {
-    const classInstance = await this.findOne(id);
-    await classInstance.destroy();
+  async remove(id: string): Promise<{ message: string }> {
+  const classInstance = await this.classModel.findByPk(id);
+  
+  if (!classInstance) {
+    throw new NotFoundException(`Turma com ID ${id} não encontrada.`);
   }
+
+  const className = classInstance.getDataValue('name'); // Usar getDataValue para acessar diretamente
+  
+  await classInstance.destroy();
+
+  return { message: `Turma "${className}" deletada com sucesso` };
+}
 
   /**
    * Associa uma disciplina a uma turma.
@@ -141,13 +150,20 @@ export class ClassesService {
   async removeSubjectFromClass(
     classId: string,
     subjectId: string,
-  ): Promise<void> {
-    const classInstance = await this.classModel.findByPk(classId);
+  ): Promise<{ message: string }> {
+    const classInstance = await this.classModel.findByPk(classId, {
+      attributes: ['id', 'name']
+    });
+  
     if (!classInstance) {
       throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
     }
-    // Usa o método $remove do Sequelize
+
     await classInstance.$remove('subject', subjectId);
+
+    return { 
+      message: `Disciplina removida com sucesso da turma "${classInstance.name}"` 
+    };
   }
 
   async addStudentToClass(classId: string, studentId: string): Promise<void> {
@@ -165,32 +181,52 @@ export class ClassesService {
    * @param classId O ID da turma.
    * @param studentId O ID do aluno a ser desmatriculado.
    */
-  async removeStudentFromClass(
-    classId: string,
-    studentId: string,
-  ): Promise<void> {
-    const classInstance = await this.classModel.findByPk(classId);
-    if (!classInstance) {
-      throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
-    }
-    // Usa o método $remove do Sequelize (relação M:N através de 'student')
-    await classInstance.$remove('student', studentId);
+  /**
+ * Desmatricula um aluno de uma turma.
+ * @param classId O ID da turma.
+ * @param studentId O ID do aluno a ser desmatriculado.
+ */
+async removeStudentFromClass(
+  classId: string,
+  studentId: string,
+): Promise<{ message: string }> {
+  // Buscar turma com nome
+  const classInstance = await this.classModel.findByPk(classId, {
+    attributes: ['id', 'name']
+  });
+  
+  if (!classInstance) {
+    throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
   }
 
+  // Usa o método $remove do Sequelize
+  await classInstance.$remove('student', studentId);
+
+  return { 
+    message: `Aluno desmatriculado com sucesso da turma ${classInstance.name}` 
+  };
+}
+
   async getStudentsFromClass(classId: string): Promise<User[]> {
-    const classInstance = await this.classModel.findByPk(classId, {
-      include: [
-        {
-          model: User,
-          as: 'students',
-          attributes: { exclude: ['password_hash'] },
-          through: { attributes: [] }, // Não traz os dados da tabela de junção
-        },
-      ],
-    });
-    if (!classInstance) {
-      throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
-    }
-    return classInstance.students;
+  const classInstance = await this.classModel.findByPk(classId, {
+    include: [
+      {
+        model: User,
+        as: 'students',
+        attributes: { exclude: ['password_hash'] },
+        through: { attributes: [] },
+      },
+    ],
+  });
+  
+  if (!classInstance) {
+    throw new NotFoundException(`Turma com ID ${classId} não encontrada.`);
   }
+
+  console.log('DEBUG - Turma:', classInstance.name);
+  console.log('DEBUG - Alunos encontrados:', classInstance.students?.length || 0);
+  console.log('DEBUG - Alunos:', classInstance.students);
+
+  return classInstance.students || [];
+}
 }

@@ -105,15 +105,17 @@ export class SubjectsController {
 
   @Delete(':id')
   @Roles(UserRole.ADMIN)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Remover uma disciplina pelo ID' })
-  @ApiResponse({ status: 204, description: 'Disciplina removida com sucesso.' })
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Disciplina removida com sucesso.' 
+  })
   @ApiResponse({
     status: 403,
     description: 'Acesso negado. Apenas administradores.',
   })
   @ApiResponse({ status: 404, description: 'Disciplina não encontrada.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.subjectsService.remove(id);
   }
 }

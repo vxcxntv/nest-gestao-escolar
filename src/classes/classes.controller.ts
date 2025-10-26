@@ -27,7 +27,7 @@ import { UserRole } from 'src/users/models/user.model';
 import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
-import { FilterClassDto } from './dto/filter-class.dto'; // Assumindo a criação futura de um filtro
+import { FilterClassDto } from './dto/filter-class.dto';
 
 @ApiTags('Classes')
 @ApiBearerAuth('access-token')
@@ -58,7 +58,6 @@ export class ClassesController {
     status: HttpStatus.OK,
     description: 'Lista de turmas retornada.',
   })
-  // Assumindo um FilterClassDto com paginação e filtros (similar ao FilterUserDto)
   @ApiQuery({
     type: FilterClassDto,
     description: 'Parâmetros opcionais para filtro e paginação.',
@@ -130,22 +129,22 @@ export class ClassesController {
     status: HttpStatus.CREATED,
     description: 'Disciplina associada com sucesso.',
   })
-  addSubjectToClass(
+  async addSubjectToClass(
     @Param('classId', ParseUUIDPipe) classId: string,
     @Body('subjectId', ParseUUIDPipe) subjectId: string,
   ) {
-    return this.classesService.addSubjectToClass(classId, subjectId);
+    await this.classesService.addSubjectToClass(classId, subjectId);
+    return { message: 'Disciplina associada com sucesso à turma' };
   }
 
   @Delete(':classId/subjects/:subjectId')
   @Roles(UserRole.ADMIN)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Desassocia uma disciplina da turma' })
   @ApiResponse({
-    status: 204,
+    status: HttpStatus.OK,
     description: 'Disciplina desassociada com sucesso.',
   })
-  removeSubjectFromClass(
+  async removeSubjectFromClass(
     @Param('classId', ParseUUIDPipe) classId: string,
     @Param('subjectId', ParseUUIDPipe) subjectId: string,
   ) {
@@ -153,7 +152,6 @@ export class ClassesController {
   }
 
   @Post(':classId/students')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Matricular um aluno em uma turma' })
   @ApiBody({
@@ -168,25 +166,25 @@ export class ClassesController {
     },
   })
   @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
+    status: HttpStatus.CREATED,
     description: 'Aluno matriculado com sucesso.',
   })
-  addStudentToClass(
+  async addStudentToClass(
     @Param('classId', ParseUUIDPipe) classId: string,
     @Body('studentId', ParseUUIDPipe) studentId: string,
   ) {
-    return this.classesService.addStudentToClass(classId, studentId);
+    await this.classesService.addStudentToClass(classId, studentId);
+    return { message: 'Aluno matriculado com sucesso na turma' };
   }
 
   @Delete(':classId/students/:studentId')
   @Roles(UserRole.ADMIN)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Desmatricula um aluno de uma turma' })
   @ApiResponse({
-    status: 204,
+    status: HttpStatus.OK,
     description: 'Aluno desmatriculado com sucesso.',
   })
-  removeStudentFromClass(
+  async removeStudentFromClass(
     @Param('classId', ParseUUIDPipe) classId: string,
     @Param('studentId', ParseUUIDPipe) studentId: string,
   ) {

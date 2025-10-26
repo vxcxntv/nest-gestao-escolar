@@ -75,8 +75,19 @@ export class SubjectsService {
   /**
    * Remove uma disciplina do banco de dados.
    */
-  async remove(id: string): Promise<void> {
-    const subject = await this.findOne(id);
+  async remove(id: string): Promise<{ message: string }> {
+    const subject = await this.subjectModel.findByPk(id, {
+      attributes: ['id', 'name'] // Buscar apenas campos necessários
+    });
+  
+    if (!subject) {
+      throw new NotFoundException(`Disciplina com ID ${id} não encontrada.`);
+    }
+
+    const subjectName = subject.getDataValue('name'); // Acessar diretamente
+  
     await subject.destroy();
+
+    return { message: `Disciplina "${subjectName}" removida com sucesso` };
   }
 }

@@ -95,13 +95,15 @@ export class GradesController {
 
   @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @Delete('grades/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Remove uma nota pelo ID (acesso: Admin e Professor).',
   })
   @ApiParam({ name: 'id', description: 'ID da nota a ser removida.' })
-  @ApiResponse({ status: 204, description: 'Nota removida com sucesso.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
+  @ApiResponse({ 
+    status: HttpStatus.OK, 
+    description: 'Nota removida com sucesso.' 
+  })
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.gradesService.remove(id);
   }
 }

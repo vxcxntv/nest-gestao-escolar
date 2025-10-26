@@ -20,15 +20,40 @@ export class GradesService {
    * @returns A nota criada.
    */
   async create(
-    createGradeDto: CreateGradeDto,
-    teacherId: string,
-  ): Promise<Grade> {
-    const gradeData = {
-      ...createGradeDto,
-      teacherId,
-    };
-    return this.gradeModel.create(gradeData);
+  createGradeDto: CreateGradeDto,
+  teacherId: string,
+): Promise<Grade> {
+  console.log('=== DEBUG CREATE GRADE ===');
+  console.log('Dados recebidos:', JSON.stringify(createGradeDto, null, 2));
+  console.log('Teacher ID:', teacherId);
+  
+  const gradeData = {
+    ...createGradeDto,
+    teacherId,
+  };
+
+  console.log('Dados para INSERT:', JSON.stringify(gradeData, null, 2));
+
+  try {
+    console.log('Tentando criar nota no banco...');
+    const result = await this.gradeModel.create(gradeData);
+    console.log('NOTA CRIADA COM SUCESSO! ID:', result.id);
+    console.log('Dados retornados:', JSON.stringify(result.get({ plain: true }), null, 2));
+    return result;
+  } catch (error: any) {
+    console.error('ERRO AO CRIAR NOTA:');
+    console.error('Mensagem:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('Detalhes:', error);
+    
+    // Log mais detalhado para PostgreSQL
+    if (error.original) {
+      console.error('❌ Erro PostgreSQL:', error.original);
+    }
+    
+    throw error;
   }
+}
 
   /**
    * Busca todas as notas de um aluno específico.
@@ -85,8 +110,16 @@ export class GradesService {
     return this.findOne(id); // Retorna a nota atualizada com as associações
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const grade = await this.findOne(id);
+    const studentName = grade.student?.name || 'Aluno';
+    const subjectName = grade.subject?.name || 'Disciplina';
+    const gradeValue = grade.value;
+  
     await grade.destroy();
+
+    return { 
+      message: `Nota ${gradeValue} do aluno ${studentName} em ${subjectName} removida com sucesso` 
+    };
   }
 }

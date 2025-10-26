@@ -22,32 +22,35 @@ export class Grade extends Model {
     type: DataType.FLOAT,
     allowNull: false,
   })
-  value: number;
+  declare value: number;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
   })
-  description: string; // Ex: "Prova Bimestral", "Trabalho de História"
+  declare description: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })
-  studentId: string;
+  declare studentId: string;
 
   @BelongsTo(() => User, 'studentId')
-  student: User;
+  declare student: User;
 
   @ForeignKey(() => Subject)
   @Column({ type: DataType.UUID, allowNull: false })
-  subjectId: string;
+  declare subjectId: string;
 
   @BelongsTo(() => Subject)
-  subject: Subject;
+  declare subject: Subject;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })
-  teacherId: string; // Professor que lançou a nota
+  declare teacherId: string;
 
   @BelongsTo(() => User, 'teacherId')
-  teacher: User;
+  declare teacher: User;
+
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }

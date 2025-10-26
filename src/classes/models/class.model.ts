@@ -3,7 +3,6 @@ import { Subject } from 'src/subjects/models/subject.model';
 import { ClassSubject } from './class-subject.model';
 import { User } from 'src/users/models/user.model';
 import { Enrollment } from './enrollment.model';
-
 import {
   Table,
   Column,
@@ -26,26 +25,30 @@ export class Class extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  name: string;
+  declare name: string;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  academic_year: number;
+  declare academic_year: number;
+
   @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
   })
-  teacherId: string;
+  declare teacherId: string;
 
-  @BelongsTo(() => User)
-  teacher: User;
+  @BelongsTo(() => User, 'teacherId')
+  declare teacher: User;
 
   @BelongsToMany(() => Subject, () => ClassSubject)
-  subjects: Subject[];
+  declare subjects: Subject[];
 
-  @BelongsToMany(() => User, () => Enrollment)
-  students: User[];
+  @BelongsToMany(() => User, () => Enrollment, 'classId', 'studentId')
+  declare students: User[];
+
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
