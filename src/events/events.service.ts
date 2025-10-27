@@ -65,8 +65,13 @@ export class EventsService {
     return event.update(updateEventDto);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const event = await this.findOne(id);
+    const eventTitle = event.get('title'); // Use get() em vez de .title
     await event.destroy();
+
+    return { 
+      message: `Evento '${eventTitle}' removido com sucesso.` 
+    };
   }
 }

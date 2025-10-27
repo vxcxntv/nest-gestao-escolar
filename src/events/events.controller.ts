@@ -88,7 +88,15 @@ export class EventsController {
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Remover um evento pelo ID' })
   @ApiParam({ name: 'id', description: 'ID do Evento' })
-  @ApiResponse({ status: 200, description: 'Evento removido com sucesso.' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Evento removido com sucesso.',
+    schema: {
+      example: {
+        message: "Evento 'Feriado de Natal' removido com sucesso."
+      }
+    }
+  })
   @ApiResponse({ status: 404, description: 'Evento não encontrado.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.eventsService.remove(id);
