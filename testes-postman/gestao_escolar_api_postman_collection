@@ -18,23 +18,22 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Script simplificado - sempre salva como admin\r",
+									"// No Tests tab do login request\r",
 									"if (pm.response.code === 200) {\r",
 									"    const response = pm.response.json();\r",
 									"    const accessToken = response.access_token;\r",
 									"    \r",
-									"    // SEMPRE salva como token_admin, independente do perfil real\r",
-									"    pm.environment.set('token_admin', accessToken);\r",
+									"    // Salva o token do usuário que fez login\r",
 									"    pm.environment.set('current_token', accessToken);\r",
+									"    pm.environment.set('token_admin', accessToken); // Se quiser manter como admin\r",
 									"    \r",
-									"    // Força o role como admin para consistência\r",
-									"    pm.environment.set('current_user_role', 'admin');\r",
-									"    pm.environment.set('current_user_id', response.user?.id || 'admin_id');\r",
-									"    pm.environment.set('current_user_email', response.user?.email || 'admin@escola.com');\r",
-									"    pm.environment.set('current_user_name', response.user?.name || 'Administrador');\r",
+									"    // Atualiza as informações do usuário logado\r",
+									"    pm.environment.set('current_user_role', response.user.role);\r",
+									"    pm.environment.set('current_user_id', response.user.id);\r",
+									"    pm.environment.set('current_user_email', response.user.email);\r",
+									"    pm.environment.set('current_user_name', response.user.name);\r",
 									"    \r",
-									"    console.log('✅ Token de ADMIN configurado (forçado)');\r",
-									"    console.log('🔑 Token: ' + accessToken.substring(0, 20) + '...');\r",
+									"    console.log('✅ Token configurado para: ' + response.user.email);\r",
 									"}"
 								],
 								"type": "text/javascript",
@@ -54,7 +53,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"email\": \"admin@escola.com\",\r\n  \"password\": \"senha123\"\r\n}",
+							"raw": "{\r\n  \"email\": \"pablovegetti@gmail.com\",\r\n  \"password\": \"PabloVegetti123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -111,6 +110,52 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Registrar",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Admin Principal\",\r\n  \"email\": \"admin@escola.com\",\r\n  \"password\": \"admin123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -127,7 +172,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{token}}",
+								"value": "Bearer {{token_admin}}",
 								"type": "text"
 							},
 							{
@@ -146,7 +191,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/users?page=1&limit=10",
+							"raw": "{{base_url}}/users?",
 							"host": [
 								"{{base_url}}"
 							],
@@ -155,12 +200,8 @@
 							],
 							"query": [
 								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "10"
+									"key": "",
+									"value": null
 								}
 							]
 						}
@@ -208,7 +249,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Administrador\",\r\n  \"email\": \"admin@escola.com\",\r\n  \"password\": \"admin123\",\r\n  \"role\": \"admin\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Matheus Abreu\",\r\n  \"email\": \"matheusabreu@gmail.com\",\r\n  \"password\": \"MatheusAbreu123\", \r\n  \"role\": \"student\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -244,13 +285,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/users/{id}",
+							"raw": "{{base_url}}/users/421d833b-8c70-48d9-a592-aab732519df6",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"users",
-								"{id}"
+								"421d833b-8c70-48d9-a592-aab732519df6"
 							]
 						}
 					},
@@ -274,7 +315,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"currentPassword\": \"senhaAntiga123\",\r\n  \"newPassword\": \"novaSenha456\"\r\n}",
+							"raw": "{\r\n  \"currentPassword\": \"rayanvitor123\",\r\n  \"newPassword\": \"RayanVitor123\",\r\n  \"confirmNewPassword\": \"RayanVitor123\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -299,9 +340,20 @@
 					"name": "Obter infos usuário logado",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/users/me?Authorization=Bearer {{token_admin}}&Content-Type=application/json",
+							"raw": "{{base_url}}/users/me?",
 							"host": [
 								"{{base_url}}"
 							],
@@ -311,12 +363,8 @@
 							],
 							"query": [
 								{
-									"key": "Authorization",
-									"value": "Bearer {{token_admin}}"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json"
+									"key": "",
+									"value": null
 								}
 							]
 						}
@@ -341,7 +389,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Pablo Vegetti\",\r\n  \"email\": \"pablovegetti@escola.com\",\r\n  \"role\": \"teacher\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Rayan Vitor\",\r\n  \"email\": \"rayanvitor@gmail.com\",\r\n  \"role\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -349,13 +397,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/users/{id}",
+							"raw": "{{base_url}}/users/597aaf28-e366-4dcf-b91e-b52d7eb19508",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"users",
-								"{id}"
+								"597aaf28-e366-4dcf-b91e-b52d7eb19508"
 							]
 						}
 					},
@@ -365,25 +413,26 @@
 					"name": "Remover usuário pelo id",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/users/{id}?Authorization=Bearer {{token_admin}}&Content-Type=application/json",
+							"raw": "{{base_url}}/users/421d833b-8c70-48d9-a592-aab732519df6",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"users",
-								"{id}"
-							],
-							"query": [
-								{
-									"key": "Authorization",
-									"value": "Bearer {{token_admin}}"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
+								"421d833b-8c70-48d9-a592-aab732519df6"
 							]
 						}
 					},
@@ -402,6 +451,11 @@
 							{
 								"key": "Authorization",
 								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
 								"type": "text"
 							}
 						],
@@ -441,7 +495,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{token}}",
+								"value": "Bearer {{token_admin}}",
 								"type": "text"
 							},
 							{
@@ -452,7 +506,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Turma A\",\r\n  \"year\": 2025,\r\n  \"period\": \"manhã\",\r\n  \"teacherId\": \"{{current_user_id}}\"  // ← Você mesmo como professor\r\n}",
+							"raw": "{\r\n  \"name\": \"Banco de Dados\",\r\n  \"academic_year\": 2025,\r\n  \"teacherId\": \"41bb3838-5156-4168-a38f-627a46051e2e\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -475,10 +529,21 @@
 					"name": "Matricular Aluno",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\"\r\n}",
+							"raw": "{\r\n  \"studentId\": \"d48ff131-c6d2-41f1-a074-92b429c508d7\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -486,14 +551,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/classes/{classId}/students ",
+							"raw": "{{base_url}}/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/students",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{classId}",
-								"students "
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
+								"students"
 							]
 						}
 					},
@@ -503,10 +568,21 @@
 					"name": "Atualizar Turma",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"8º Ano B\",\r\n  \"period\": \"tarde\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Turma de Matemática Atualizada\",\r\n  \"academic_year\": 2025,\r\n  \"teacherId\": \"41bb3838-5156-4168-a38f-627a46051e2e\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -514,13 +590,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/classes/{id}",
+							"raw": "{{base_url}}/classes/5a0ab829-4430-4370-b973-08f6518b0f36",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{id}"
+								"5a0ab829-4430-4370-b973-08f6518b0f36"
 							]
 						}
 					},
@@ -530,15 +606,26 @@
 					"name": "Buscar turma por ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/classes/{id}",
+							"raw": "{{base_url}}/classes/5a0ab829-4430-4370-b973-08f6518b0f36",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{id}"
+								"5a0ab829-4430-4370-b973-08f6518b0f36"
 							]
 						}
 					},
@@ -548,15 +635,26 @@
 					"name": "Remover turma",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/classes/{id}",
+							"raw": "{{base_url}}/classes/214a23ed-afbc-4ffe-adec-fe38185b1ee6",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{id}"
+								"214a23ed-afbc-4ffe-adec-fe38185b1ee6"
 							]
 						}
 					},
@@ -566,10 +664,21 @@
 					"name": "Associar disciplina a turma",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"studentId\": \"{{test_student_id}}\",  // ← Configurar esta variável\r\n  \"subjectId\": \"{{test_subject_id}}\",  // ← Configurar esta variável\r\n  \"classId\": \"{{test_class_id}}\",      // ← Configurar esta variável\r\n  \"value\": 8.5,\r\n  \"type\": \"prova\",\r\n  \"description\": \"Prova Bimestral\"\r\n}",
+							"raw": "{\r\n  \"subjectId\": \"52ae05b8-4529-44f9-9699-9137a4034d1c\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -577,13 +686,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/classes/{classId}/subjects",
+							"raw": "{{base_url}}/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/subjects",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{classId}",
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
 								"subjects"
 							]
 						}
@@ -594,17 +703,28 @@
 					"name": "Remove disciplina da turma",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/classes/{classId}/subjects/{subjectId}",
+							"raw": "{{base_url}}/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/subjects/52ae05b8-4529-44f9-9699-9137a4034d1c",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{classId}",
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
 								"subjects",
-								"{subjectId}"
+								"52ae05b8-4529-44f9-9699-9137a4034d1c"
 							]
 						}
 					},
@@ -614,15 +734,26 @@
 					"name": "Listar alunos matriculados",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/classes/{classId}/students",
+							"raw": "{{base_url}}/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/students",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{classId}",
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
 								"students"
 							]
 						}
@@ -633,17 +764,28 @@
 					"name": "Remove aluno da turma",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/classes/{classId}/students/{studentId}",
+							"raw": "{{base_url}}/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/students/d48ff131-c6d2-41f1-a074-92b429c508d7",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"classes",
-								"{classId}",
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
 								"students",
-								"{studentId}"
+								"d48ff131-c6d2-41f1-a074-92b429c508d7"
 							]
 						}
 					},
@@ -675,10 +817,21 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Matemática\",\r\n  \"code\": \"MAT-08\",\r\n  \"description\": \"Matemática para o 8º ano\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Programação WEB\",\r\n  \"description\": \"Programação WEB para sexto período\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -701,7 +854,18 @@
 					"name": "Listar disciplinas",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/subjects",
 							"host": [
@@ -718,15 +882,26 @@
 					"name": "Buscar disciplina pelo id",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/subjects/{id}",
+							"raw": "{{base_url}}/subjects/52ae05b8-4529-44f9-9699-9137a4034d1c",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"subjects",
-								"{id}"
+								"52ae05b8-4529-44f9-9699-9137a4034d1c"
 							]
 						}
 					},
@@ -736,10 +911,21 @@
 					"name": "Atualizar disciplina",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Matemática Avançada\",\r\n  \"description\": \"Conteúdo atualizado\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Banco de Dados 1\",\r\n  \"description\": \"Conteúdo atualizado\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -747,13 +933,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/subjects/{id}",
+							"raw": "{{base_url}}/subjects/52ae05b8-4529-44f9-9699-9137a4034d1c",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"subjects",
-								"{id}"
+								"52ae05b8-4529-44f9-9699-9137a4034d1c"
 							]
 						}
 					},
@@ -763,15 +949,26 @@
 					"name": "Remover disciplina",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/subjects/{id}",
+							"raw": "{{base_url}}/subjects/d6e1f62a-2b99-41ff-9111-61d6c4ba9d5e",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"subjects",
-								"{id}"
+								"d6e1f62a-2b99-41ff-9111-61d6c4ba9d5e"
 							]
 						}
 					},
@@ -789,7 +986,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{token}}",
+								"value": "Bearer {{token_admin}}",
 								"type": "text"
 							},
 							{
@@ -800,7 +997,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\",\r\n  \"subjectId\": \"507f1f77bcf86cd799439012\",\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"value\": 8.5,\r\n  \"type\": \"prova\",\r\n  \"description\": \"Prova Bimestral - 1º Bimestre\"\r\n}",
+							"raw": "{\r\n  \"studentId\": \"d48ff131-c6d2-41f1-a074-92b429c508d7\",\r\n  \"subjectId\": \"90be4ce1-fa0c-498f-8e6e-ea294d1bb0a5\",\r\n  \"value\": 8.5,\r\n  \"description\": \"Prova do 1º Bimestre\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -823,15 +1020,26 @@
 					"name": "Notas do aluno",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/students/{studentId}/grades",
+							"raw": "{{base_url}}/students/d48ff131-c6d2-41f1-a074-92b429c508d7/grades",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"students",
-								"{studentId}",
+								"d48ff131-c6d2-41f1-a074-92b429c508d7",
 								"grades"
 							]
 						}
@@ -842,7 +1050,18 @@
 					"name": "Consultar notas usuário logado",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/my-grades",
 							"host": [
@@ -859,7 +1078,18 @@
 					"name": "Atualiza nota",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n  \"value\": 9.0,\r\n  \"description\": \"Nota atualizada após revisão\"\r\n}",
@@ -870,13 +1100,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/grades/{id}",
+							"raw": "{{base_url}}/grades/6f4b325f-42ed-418f-8b17-c3b0b7aec6b2",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"grades",
-								"{id}"
+								"6f4b325f-42ed-418f-8b17-c3b0b7aec6b2"
 							]
 						}
 					},
@@ -886,15 +1116,26 @@
 					"name": "Remover nota pelo id",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/grades/{id}",
+							"raw": "{{base_url}}/grades/72faef1a-95d3-4a45-8864-8231319f8809",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"grades",
-								"{id}"
+								"72faef1a-95d3-4a45-8864-8231319f8809"
 							]
 						}
 					},
@@ -912,7 +1153,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Bearer {{token}}",
+								"value": "Bearer {{token_admin}}",
 								"type": "text"
 							},
 							{
@@ -923,7 +1164,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"subjectId\": \"507f1f77bcf86cd799439012\",\r\n  \"date\": \"2025-10-17\",\r\n  \"records\": [\r\n    {\r\n      \"studentId\": \"507f1f77bcf86cd799439013\",\r\n      \"status\": \"present\"\r\n    },\r\n    {\r\n      \"studentId\": \"507f1f77bcf86cd799439015\",\r\n      \"status\": \"absent\"\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"date\": \"2025-10-26\",\r\n  \"classId\": \"1565e909-5627-41f1-85f8-dbe8d8f7b6d7\",\r\n  \"subjectId\": \"90be4ce1-fa0c-498f-8e6e-ea294d1bb0a5\",\r\n  \"presences\": [\r\n    {\r\n      \"studentId\": \"d48ff131-c6d2-41f1-a074-92b429c508d7\",\r\n      \"status\": \"present\"\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -946,7 +1187,18 @@
 					"name": "Listar frequências",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/attendances",
 							"host": [
@@ -963,16 +1215,27 @@
 					"name": "Consultar histórico frequência",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/attendances/students/{studentId}",
+							"raw": "{{base_url}}/attendances/students/d48ff131-c6d2-41f1-a074-92b429c508d7",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"attendances",
 								"students",
-								"{studentId}"
+								"d48ff131-c6d2-41f1-a074-92b429c508d7"
 							]
 						}
 					},
@@ -982,16 +1245,27 @@
 					"name": "Resumo de frequências",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/attendances/classes/{classId}/summary",
+							"raw": "{{base_url}}/attendances/classes/1565e909-5627-41f1-85f8-dbe8d8f7b6d7/summary",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"attendances",
 								"classes",
-								"{classId}",
+								"1565e909-5627-41f1-85f8-dbe8d8f7b6d7",
 								"summary"
 							]
 						}
@@ -1002,10 +1276,21 @@
 					"name": "Atualizar frequência",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"status\": \"justified\"\r\n}",
+							"raw": "{\r\n  \"status\": \"absent\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1013,13 +1298,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/attendances/{id}",
+							"raw": "{{base_url}}/attendances/2",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"attendances",
-								"{id}"
+								"2"
 							]
 						}
 					},
@@ -1029,15 +1314,26 @@
 					"name": "Remover frequência",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/attendances/{id}",
+							"raw": "{{base_url}}/attendances/1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"attendances",
-								"{id}"
+								"1"
 							]
 						}
 					},
@@ -1052,10 +1348,21 @@
 					"name": "Criar avisos",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"title\": \"Reunião de Pais\",\r\n  \"content\": \"Há uma reunião de pais marcada para próxima sexta-feira...\",\r\n  \"targetAudience\": [\"parents\", \"students\"],\r\n  \"priority\": \"high\"\r\n}",
+							"raw": "{\r\n  \"title\": \"Reunião de Pais\",\r\n  \"content\": \"Há uma reunião de pais marcada para próxima sexta-feira às 19h no auditório.\",\r\n  \"classId\": \"1565e909-5627-41f1-85f8-dbe8d8f7b6d7\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1078,7 +1385,18 @@
 					"name": "Listar avisos",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/announcements",
 							"host": [
@@ -1095,15 +1413,26 @@
 					"name": "Buscar aviso por ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/announcements/{id}",
+							"raw": "{{base_url}}/announcements/70504423-bf00-480f-b9c0-745326b29214",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"announcements",
-								"{id}"
+								"70504423-bf00-480f-b9c0-745326b29214"
 							]
 						}
 					},
@@ -1113,10 +1442,21 @@
 					"name": "Atualizar aviso",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"title\": \"Título atualizado\",\r\n  \"content\": \"Conteúdo atualizado\",\r\n  \"priority\": \"high|medium|low\",\r\n  \"targetAudience\": [\"students\", \"parents\", \"teachers\"],\r\n  \"isActive\": true\r\n}",
+							"raw": "{\r\n  \"title\": \"Reunião de Pais - Atualizado\",\r\n  \"content\": \"Conteúdo completamente atualizado...\",\r\n  \"classId\": \"1565e909-5627-41f1-85f8-dbe8d8f7b6d7\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1124,13 +1464,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/announcements/{id}",
+							"raw": "{{base_url}}/announcements/70504423-bf00-480f-b9c0-745326b29214",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"announcements",
-								"{id}"
+								"70504423-bf00-480f-b9c0-745326b29214"
 							]
 						}
 					},
@@ -1140,15 +1480,26 @@
 					"name": "Remover aviso",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/announcements/{id}",
+							"raw": "{{base_url}}/announcements/2e9412fb-0dc0-4416-8ef7-53c0909d1e10",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"announcements",
-								"{id}"
+								"2e9412fb-0dc0-4416-8ef7-53c0909d1e10"
 							]
 						}
 					},
@@ -1163,10 +1514,21 @@
 					"name": "Criar fatura individual",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"studentId\": \"507f1f77bcf86cd799439013\",\r\n  \"dueDate\": \"2025-11-05\",\r\n  \"amount\": 850.00,\r\n  \"description\": \"Mensalidade - Novembro/2025\"\r\n}",
+							"raw": "{\r\n  \"studentId\": \"d48ff131-c6d2-41f1-a074-92b429c508d7\",\r\n  \"description\": \"Mensalidade de Novembro/2025\",\r\n  \"amount\": 750.50,\r\n  \"dueDate\": \"2025-11-10\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1189,7 +1551,18 @@
 					"name": "Listar faturas",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/invoices",
 							"host": [
@@ -1206,10 +1579,21 @@
 					"name": "Atualizar dados fatura",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"amount\": 800.00,\r\n  \"dueDate\": \"2025-11-10\"\r\n}",
+							"raw": "{\r\n  \"description\": \"Mensalidade de Novembro/2025 - Atualizada\",\r\n  \"amount\": 780.00,\r\n  \"dueDate\": \"2025-11-15\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1217,13 +1601,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/invoices/{id}",
+							"raw": "{{base_url}}/invoices/9af79d5d-0747-4c4e-9985-991284bce7eb",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"invoices",
-								"{id}"
+								"9af79d5d-0747-4c4e-9985-991284bce7eb"
 							]
 						}
 					},
@@ -1233,15 +1617,26 @@
 					"name": "Buscar fatura por ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/invoices/{id}",
+							"raw": "{{base_url}}/invoices/9af79d5d-0747-4c4e-9985-991284bce7eb",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"invoices",
-								"{id}"
+								"9af79d5d-0747-4c4e-9985-991284bce7eb"
 							]
 						}
 					},
@@ -1251,15 +1646,26 @@
 					"name": "Listar faturas por aluno",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/students/{studentId}/invoices",
+							"raw": "{{base_url}}/students/d48ff131-c6d2-41f1-a074-92b429c508d7/invoices",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"students",
-								"{studentId}",
+								"d48ff131-c6d2-41f1-a074-92b429c508d7",
 								"invoices"
 							]
 						}
@@ -1270,10 +1676,21 @@
 					"name": "Criar faturas em lote",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"classId\": \"507f1f77bcf86cd799439014\",\r\n  \"dueDate\": \"2025-11-05\",\r\n  \"amount\": 850.00,\r\n  \"description\": \"Mensalidade - Novembro/2025\"\r\n}",
+							"raw": "{\r\n  \"classId\": \"1565e909-5627-41f1-85f8-dbe8d8f7b6d7\",\r\n  \"description\": \"Mensalidade de Novembro/2025\",\r\n  \"amount\": 800.00,\r\n  \"dueDate\": \"2025-11-10\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1297,10 +1714,21 @@
 					"name": "Marcar fatura como paga",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"paymentDate\": \"2025-10-18\",\r\n  \"paymentMethod\": \"pix\",\r\n  \"transactionId\": \"TX123456789\"\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1308,13 +1736,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/invoices/{id}/pay",
+							"raw": "{{base_url}}/invoices/ff1e5cc5-ca00-4baf-83c4-5385b880bf3f/pay",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"invoices",
-								"{id}",
+								"ff1e5cc5-ca00-4baf-83c4-5385b880bf3f",
 								"pay"
 							]
 						}
@@ -1325,10 +1753,21 @@
 					"name": "Marcar fatura como cancelada",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"cancellationReason\": \"Pagamento duplicado\"\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1336,13 +1775,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/invoices/{id}/cancel",
+							"raw": "{{base_url}}/invoices/ff1e5cc5-ca00-4baf-83c4-5385b880bf3f/cancel",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"invoices",
-								"{id}",
+								"ff1e5cc5-ca00-4baf-83c4-5385b880bf3f",
 								"cancel"
 							]
 						}
@@ -1358,7 +1797,18 @@
 					"name": "Relatório de receita por periodo",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/reports/financial/revenue",
 							"host": [
@@ -1377,7 +1827,18 @@
 					"name": "Relatório de inadimplência",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/reports/financial/defaults",
 							"host": [
@@ -1396,7 +1857,18 @@
 					"name": "Gerar histórico completo do aluno",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/reports/students/{studentId}/history",
 							"host": [
@@ -1416,7 +1888,18 @@
 					"name": "Gerar relatório de desempenha da turma",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/reports/classes/{classId}/performance",
 							"host": [
@@ -1441,7 +1924,18 @@
 					"name": "Dashboard admin",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/dashboard/admin",
 							"host": [
@@ -1459,7 +1953,18 @@
 					"name": "Dashboard aluno",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/dashboard/student",
 							"host": [
@@ -1477,7 +1982,18 @@
 					"name": "Dashboard professor",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/dashboard/teacher",
 							"host": [
@@ -1500,10 +2016,21 @@
 					"name": "Criar evento",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"title\": \"Feriado - Dia do Professor\",\r\n  \"description\": \"Feriado escolar\",\r\n  \"startDate\": \"2025-10-15\",\r\n  \"endDate\": \"2025-10-15\",\r\n  \"type\": \"holiday\"\r\n}",
+							"raw": "{\r\n  \"title\": \"Feriado de Natal\",\r\n  \"description\": \"Feriado nacional de Natal - recesso escolar\",\r\n  \"date\": \"2025-12-25\",\r\n  \"type\": \"holiday\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1543,15 +2070,26 @@
 					"name": "Buscar evento pelo ID",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/events/{id}",
+							"raw": "{{base_url}}/events/50de3e4d-43c1-40ab-853d-fc7c4ffdefee",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"events",
-								"{id}"
+								"50de3e4d-43c1-40ab-853d-fc7c4ffdefee"
 							]
 						}
 					},
@@ -1561,10 +2099,21 @@
 					"name": "Atualizar evento",
 					"request": {
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"title\": \"Feriado - Dia dos Professores\",\r\n  \"description\": \"Feriado nacional em homenagem aos professores\"\r\n}",
+							"raw": "{\r\n  \"title\": \"Feriado de Natal - Recesso Escolar\",\r\n  \"description\": \"Recesso de final de ano, retorno em janeiro\",\r\n  \"date\": \"2025-12-25\",\r\n  \"type\": \"holiday\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1572,13 +2121,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/events/{id}",
+							"raw": "{{base_url}}/events/50de3e4d-43c1-40ab-853d-fc7c4ffdefee",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"events",
-								"{id}"
+								"50de3e4d-43c1-40ab-853d-fc7c4ffdefee"
 							]
 						}
 					},
@@ -1588,15 +2137,26 @@
 					"name": "Remover evento",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token_admin}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/events/{id}",
+							"raw": "{{base_url}}/events/09d58c1d-627d-4c98-bad1-8e9dd0b30ffc",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"events",
-								"{id}"
+								"09d58c1d-627d-4c98-bad1-8e9dd0b30ffc"
 							]
 						}
 					},
