@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -56,6 +57,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  fs.writeFileSync('./swagger-spec.json', JSON.stringify(document));
 
   // A documentação ficará disponível em http://localhost:3000/api-docs
   SwaggerModule.setup('api-docs', app, document);
