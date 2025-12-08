@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { UsersModule } from './users/users.module';
@@ -50,4 +51,14 @@ import { EventsModule } from './events/events.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private sequelize: Sequelize) {}
+
+  async onModuleInit(): Promise<void> {
+    // Em ambientes de desenvolvimento, sincroniza o esquema e aplica alterações
+    // Atenção: Não recomendado habilitar em produção — prefira migrations
+    if (process.env.NODE_ENV !== 'production') {
+      await this.sequelize.sync({ alter: true });
+    }
+  }
+}

@@ -49,4 +49,39 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRole;
+
+  @ApiPropertyOptional({
+    description: 'Telefone de contato do usuário (opcional)',
+    example: '+55 (11) 91234-5678',
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[\d+\-()\s]{7,20}$/, {
+    message: 'Telefone inválido',
+  })
+  phone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Matrícula ou número de registro do usuário (opcional)',
+    example: '20250001',
+  })
+  @IsOptional()
+  @IsString()
+  matricula?: string;
+
+  @ApiPropertyOptional({
+    description: 'Matrícula do enrollment associada ao usuário (opcional)',
+    example: 'enrollment-uuid-1234',
+  })
+  @IsString()
+  @IsOptional()
+  enrollment?: string; // Aceita enrollment se o front mandar
+
+  @ApiPropertyOptional({
+    description: 'Turma à qual o usuário será associado (opcional)',
+    example: 'Turma A - 2024',
+  })
+  @IsString()
+  @IsOptional()
+  class?: string; // Aceita o nome/ID da turma
 }

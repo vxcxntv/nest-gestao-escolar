@@ -2,6 +2,7 @@ import { Table, Column, Model, DataType, HasMany, HasOne } from 'sequelize-types
 import { Class } from 'src/classes/models/class.model';
 import { BelongsToMany } from 'sequelize-typescript';
 import { Enrollment } from 'src/classes/models/enrollment.model';
+import { Grade } from '../../grades/models/grade.model';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -44,6 +45,19 @@ export class User extends Model {
   })
   declare role: UserRole; // ✅ Adicione DECLARE
 
+  @Column({ 
+    type: DataType.STRING, 
+    allowNull: true, 
+  })
+  declare phone: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    unique: true,
+  })
+  declare matricula: string;
+
   @BelongsToMany(() => Class, () => Enrollment)
   declare enrolledClasses: Class[]; // ✅ Adicione DECLARE
 
@@ -52,6 +66,9 @@ export class User extends Model {
 
   @HasOne(() => Enrollment)
   enrollment: Enrollment;
+
+  @HasMany(() => Grade)
+  grades: Grade[];
 
   // Adicione os timestamps se necessário
   declare readonly createdAt: Date;

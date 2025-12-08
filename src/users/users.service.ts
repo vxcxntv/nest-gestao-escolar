@@ -22,61 +22,84 @@ export class UsersService {
   constructor(
     @InjectModel(User)
     private userModel: typeof User,
+    @InjectModel(Enrollment)
+    private enrollmentModel: typeof Enrollment, 
+    @InjectModel(Class)
+    private classModel: typeof Class,
   ) {}
 
   // Criação de usuário com hash de senha
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
-
-    const userToCreate = {
+  async create(createUserDto: CreateUserDto) {
+    // 1. Cria o usuário
+    const user = await this.userModel.create({
       ...createUserDto,
-      password_hash: hashedPassword,
-    };
+      password_hash: await bcrypt.hash(createUserDto.password || '123456', 10),
+      // Mapeia o campo enrollment do front para a coluna matricula (se tiver renomeado)
+      // matricula: createUserDto.enrollment 
+    });
 
-    delete (userToCreate as any).password;
+    // 2. Se veio o nome da turma, cria o vínculo na tabela enrollments
+    if (createUserDto.class && user.role === 'student') {
+      try {
+        // Tenta achar a turma pelo nome exato enviado (ex: "1º Ano A")
+        // DICA: No front, o ideal é enviar o ID da turma, mas vamos suportar nome por enquanto
+        const classFound = await this.classModel.findOne({
+            where: { name: { [Op.iLike]: createUserDto.class } }
+        });
 
-    const createdUser = await this.userModel.create(userToCreate);
-    const { password_hash, ...result } = createdUser.get({ plain: true });
-    return result as User;
+        if (classFound) {
+            await this.enrollmentModel.create({
+                studentId: user.id,
+                classId: classFound.id
+            });
+        }
+      } catch (e) {
+          console.error("Erro ao vincular turma na criação", e);
+          // Não falha a criação do usuário, apenas loga o erro de vínculo
+      }
+    }
+
+    return user;
   }
 
   // findAll COM FILTROS E PAGINAÇÃO
-  async findAll(filterDto: FilterUserDto) {
+  async findAll(filterDto: any) { // Use seu DTO de filtro aqui
     const { page = 1, limit = 10, name, email, role } = filterDto;
-
+    const offset = (page - 1) * limit;
     const where: any = {};
 
-    if (name) {
-      where.name = { [Op.iLike]: `%${name}%` };
-    }
-    if (email) {
-      where.email = { [Op.iLike]: `%${email}%` };
-    }
-    if (role) {
-      where.role = role;
-    }
-
-    const offset = (page - 1) * limit;
+    if (name) where.name = { [Op.iLike]: `%${name}%` };
+    if (email) where.email = { [Op.iLike]: `%${email}%` };
+    if (role) where.role = role;
 
     const { rows, count } = await this.userModel.findAndCountAll({
       where,
       limit,
       offset,
+      order: [['createdAt', 'DESC']], // Opcional: ordenar por mais recente
       attributes: { exclude: ['password_hash'] },
+      distinct: true, // Importante para contagem correta com includes
       include: [
         {
-          model: Enrollment, // Nome da classe do model de Matrícula
-          as: 'enrollment',  // O alias definido no 'User.hasOne(Enrollment)'
-          required: false,   // false = LEFT JOIN (traz o user mesmo sem matrícula)
+          model: Enrollment,
+          as: 'enrollment', // O mesmo 'as' definido no user.model.ts (@HasOne)
+          required: false,  // LEFT JOIN (traz aluno mesmo sem turma)
           include: [
             {
-              model: Class, // Nome da classe do model de Turma
-              as: 'class',  // O alias definido no 'Enrollment.belongsTo(Class)'
+              model: Class,
+              as: 'class', // O mesmo 'as' definido no enrollment.model.ts (@BelongsTo)
+              attributes: ['id', 'name', 'academic_year'] // Traz só o necessário
             }
           ]
         },
-        
+        {
+          model: Grade,
+          as: 'grades',
+          required: false,
+          include: [
+             { model: Subject, as: 'subject', attributes: ['name'] }
+          ]
+        }
       ]
     });
 
