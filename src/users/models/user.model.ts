@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, HasMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, HasOne } from 'sequelize-typescript';
 import { Class } from 'src/classes/models/class.model';
 import { BelongsToMany } from 'sequelize-typescript';
 import { Enrollment } from 'src/classes/models/enrollment.model';
@@ -49,6 +49,9 @@ export class User extends Model {
 
   @HasMany(() => Class)
   declare classes: Class[]; // ✅ Adicione DECLARE
+
+  @HasOne(() => Enrollment)
+  enrollment: Enrollment;
 
   // Adicione os timestamps se necessário
   declare readonly createdAt: Date;

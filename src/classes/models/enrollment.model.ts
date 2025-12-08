@@ -4,6 +4,7 @@ import {
   Model,
   DataType,
   ForeignKey,
+  BelongsTo
 } from 'sequelize-typescript';
 import { Class } from './class.model';
 import { User } from 'src/users/models/user.model';
@@ -14,7 +15,13 @@ export class Enrollment extends Model {
   @Column({ type: DataType.UUID })
   classId: string;
 
+  @BelongsTo(() => Class)
+  class: Class;
+
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID })
   studentId: string;
+
+  @BelongsTo(() => User)
+  student: User;
 }

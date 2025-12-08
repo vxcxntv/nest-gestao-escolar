@@ -17,6 +17,13 @@ async function bootstrap() {
     }),
   );
 
+  // HABILITAR CORS
+  app.enableCors({
+    origin: true, // Permite qualquer origem (útil para desenvolvimento)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+  
   // Filtro global de exceções - AGORA ATIVADO
   app.useGlobalFilters(new HttpExceptionFilter());
 

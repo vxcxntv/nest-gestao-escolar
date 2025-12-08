@@ -12,6 +12,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { Enrollment } from 'src/classes/models/enrollment.model';
+import { Class } from 'src/classes/models/class.model';
+import { Grade } from 'src/grades/models/grade.model';
+import { Subject } from 'src/subjects/models/subject.model';
 
 @Injectable()
 export class UsersService {
@@ -60,6 +64,20 @@ export class UsersService {
       limit,
       offset,
       attributes: { exclude: ['password_hash'] },
+      include: [
+        {
+          model: Enrollment, // Nome da classe do model de Matrícula
+          as: 'enrollment',  // O alias definido no 'User.hasOne(Enrollment)'
+          required: false,   // false = LEFT JOIN (traz o user mesmo sem matrícula)
+          include: [
+            {
+              model: Class, // Nome da classe do model de Turma
+              as: 'class',  // O alias definido no 'Enrollment.belongsTo(Class)'
+            }
+          ]
+        },
+        
+      ]
     });
 
     return {
