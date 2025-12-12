@@ -70,7 +70,6 @@ export class User extends Model {
   @HasMany(() => Grade)
   grades: Grade[];
 
-  // Adicione os timestamps se necessário
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;
 }
