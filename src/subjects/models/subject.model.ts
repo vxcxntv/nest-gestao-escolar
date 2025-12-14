@@ -15,9 +15,28 @@ export class Subject extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    unique: true,
   })
   name: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true, // O código da disciplina deve ser único (ex: MAT101)
+  })
+  code: string;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  credits: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  year: number; // Representa o Ano da Grade (ex: 2025)
+  
 
   @Column({
     type: DataType.TEXT,

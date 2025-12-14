@@ -14,23 +14,52 @@ export class SubjectsService {
   ) {}
 
   /**
-   * Cria uma nova disciplina no banco de dados.
+   * Gera o próximo código disponível (Ex: DIS001, DIS002)
    */
-  async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
-    return this.subjectModel.create(createSubjectDto as any);
+  private async generateNextCode(): Promise<string> {
+    // Busca a última disciplina criada para pegar o último código
+    const lastSubject = await this.subjectModel.findOne({
+      order: [['createdAt', 'DESC']],
+      attributes: ['code'],
+    });
+
+    let nextNumber = 1;
+
+    if (lastSubject && lastSubject.code) {
+      // Extrai o número do código (ex: de DIS005 pega 5)
+      const matches = lastSubject.code.match(/DIS(\d+)/);
+      if (matches && matches[1]) {
+        nextNumber = parseInt(matches[1], 10) + 1;
+      }
+    }
+
+    // Formata para ter 3 dígitos (ex: 1 -> "001")
+    return `DIS${nextNumber.toString().padStart(3, '0')}`;
   }
 
-  /**
-   * Retorna uma lista com todas as disciplinas, com suporte a filtros e paginação.
-   * Agora aceita o FilterSubjectDto.
-   */
+  async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
+    const code = await this.generateNextCode();
+    
+    // Mescla o DTO com o código gerado
+    return this.subjectModel.create({
+      ...createSubjectDto,
+      code,
+    });
+  }
+
   async findAll(filterDto: FilterSubjectDto) {
-    const { page = 1, limit = 10, name } = filterDto;
+    const { page = 1, limit = 10, name, year } = filterDto;
     const where: any = {};
 
-    // Filtro por nome (busca parcial case-insensitive)
     if (name) {
-      where.name = { [Op.iLike]: `%${name}%` };
+      where[Op.or] = [
+        { name: { [Op.iLike]: `%${name}%` } },
+        { code: { [Op.iLike]: `%${name}%` } }
+      ];
+    }
+
+    if (year) {
+      where.year = year;
     }
 
     const offset = (page - 1) * limit;
@@ -39,7 +68,7 @@ export class SubjectsService {
       where,
       limit,
       offset,
-      order: [['name', 'ASC']],
+      order: [['code', 'ASC']], // Ordenar por código fica mais organizado agora
     });
 
     return {
@@ -50,9 +79,6 @@ export class SubjectsService {
     };
   }
 
-  /**
-   * Busca uma disciplina específica pelo seu ID.
-   */
   async findOne(id: string): Promise<Subject> {
     const subject = await this.subjectModel.findByPk(id);
     if (!subject) {
@@ -61,9 +87,6 @@ export class SubjectsService {
     return subject;
   }
 
-  /**
-   * Atualiza os dados de uma disciplina existente.
-   */
   async update(
     id: string,
     updateSubjectDto: UpdateSubjectDto,
@@ -72,20 +95,16 @@ export class SubjectsService {
     return subject.update(updateSubjectDto);
   }
 
-  /**
-   * Remove uma disciplina do banco de dados.
-   */
   async remove(id: string): Promise<{ message: string }> {
     const subject = await this.subjectModel.findByPk(id, {
-      attributes: ['id', 'name'] // Buscar apenas campos necessários
+      attributes: ['id', 'name']
     });
   
     if (!subject) {
       throw new NotFoundException(`Disciplina com ID ${id} não encontrada.`);
     }
 
-    const subjectName = subject.getDataValue('name'); // Acessar diretamente
-  
+    const subjectName = subject.getDataValue('name');
     await subject.destroy();
 
     return { message: `Disciplina "${subjectName}" removida com sucesso` };
