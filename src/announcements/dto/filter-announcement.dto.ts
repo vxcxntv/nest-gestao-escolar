@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsUUID, IsEnum, IsBoolean } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { Transform } from 'class-transformer';
 
 export class FilterAnnouncementDto extends PaginationDto {
   @ApiProperty({
@@ -18,6 +19,24 @@ export class FilterAnnouncementDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   classId?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Filtrar por categoria',
+    enum: ['general', 'event', 'urgent', 'academic']
+  })
+  @IsOptional()
+  @IsEnum(['general', 'event', 'urgent', 'academic'])
+  category?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Filtrar apenas fixados',
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true) // Converte string "true" para boolean
+  pinned?: boolean;
 
   @ApiProperty({
     required: false,

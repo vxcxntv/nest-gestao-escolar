@@ -1,4 +1,3 @@
-// src/announcements/models/announcement.model.ts
 import {
   Table,
   Column,
@@ -30,6 +29,20 @@ export class Announcement extends Model {
     allowNull: false,
   })
   declare content: string;
+
+  @Column({
+    type: DataType.STRING,
+    defaultValue: 'general', // Valor padrão caso não seja enviado
+    allowNull: false,
+  })
+  declare category: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  })
+  declare pinned: boolean;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.UUID, allowNull: false })

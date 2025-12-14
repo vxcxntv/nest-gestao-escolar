@@ -1,9 +1,7 @@
-// src/announcements/announcements.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Class } from 'src/classes/models/class.model';
-import { UserRole } from 'src/users/models/user.model';
 import { CreateAnnouncementDto } from './dto/create-announcement.dto';
 import { FilterAnnouncementDto } from './dto/filter-announcement.dto';
 import { UpdateAnnouncementDto } from './dto/update-announcement.dto';
@@ -30,7 +28,7 @@ export class AnnouncementsService {
   }
 
   async findAll(filterDto: FilterAnnouncementDto, user: any) {
-    const { page = 1, limit = 10, title, classId } = filterDto;
+    const { page = 1, limit = 10, title, classId, category, pinned } = filterDto;
     const where: any = {};
 
     if (title) {
@@ -39,8 +37,16 @@ export class AnnouncementsService {
     if (classId) {
       where.classId = classId;
     }
+    // Filtros novos
+    if (category) {
+      where.category = category;
+    }
+    if (pinned !== undefined) {
+      where.pinned = pinned;
+    }
 
     const offset = (page - 1) * limit;
+    
     const { rows, count } = await this.announcementModel.findAndCountAll({
       where,
       limit,
@@ -49,7 +55,13 @@ export class AnnouncementsService {
         { model: User, as: 'author', attributes: ['id', 'name'] },
         { model: Class, as: 'class' },
       ],
-      order: [['createdAt', 'DESC']],
+      // ORDENAÇÃO IMPORTANTE:
+      // 1. Fixados primeiro (DESC porque true > false no postgres/mysql geralmente, ou usamos sintaxe específica)
+      // Se pinned é boolean, DESC coloca TRUE primeiro.
+      order: [
+        ['pinned', 'DESC'], 
+        ['createdAt', 'DESC']
+      ],
     });
 
     return {

@@ -1,6 +1,5 @@
-// src/announcements/dto/create-announcement.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateAnnouncementDto {
   @ApiProperty({ 
@@ -18,6 +17,25 @@ export class CreateAnnouncementDto {
   @IsString()
   @IsNotEmpty()
   content: string;
+
+  @ApiProperty({
+    description: 'Categoria do aviso',
+    example: 'general',
+    enum: ['general', 'event', 'urgent', 'academic'],
+    required: false
+  })
+  @IsOptional()
+  @IsEnum(['general', 'event', 'urgent', 'academic'])
+  category?: string;
+
+  @ApiProperty({
+    description: 'Define se o aviso deve ficar fixado no topo',
+    example: false,
+    required: false
+  })
+  @IsOptional()
+  @IsBoolean()
+  pinned?: boolean;
 
   @ApiProperty({
     description: 'ID da turma (opcional). Se não for fornecido, o aviso é geral.',
