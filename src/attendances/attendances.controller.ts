@@ -39,7 +39,7 @@ export class AttendancesController {
   constructor(private readonly attendancesService: AttendancesService) {}
 
   @Post()
-  @Roles(UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({ summary: 'Registrar frequência de uma aula em lote (Batch)' })
   @ApiBody({
     type: CreateAttendanceDto,
@@ -102,7 +102,7 @@ export class AttendancesController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.TEACHER)
+  @Roles(UserRole.ADMIN, UserRole.TEACHER)
   @ApiOperation({
     summary: 'Atualizar/Corrigir um registro individual de frequência',
   })

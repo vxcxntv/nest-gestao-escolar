@@ -35,7 +35,7 @@ import {
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
-  @Roles(UserRole.TEACHER)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN)
   @Post('grades')
   @ApiOperation({
     summary: 'Lança uma nova nota para um aluno em uma disciplina.',
