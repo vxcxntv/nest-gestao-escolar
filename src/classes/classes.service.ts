@@ -29,22 +29,13 @@ export class ClassesService {
    * @returns Um array de turmas com seus respectivos professores.
    */
   async findAll(filterDto: FilterClassDto) {
-    // ASSINATURA CORRIGIDA
     const { page = 1, limit = 10, name, academic_year, teacherId } = filterDto;
     const where: any = {};
 
-    // 1. Lógica de Filtros
-    if (name) {
-      where.name = { [Op.iLike]: `%${name}%` }; // Busca parcial sem diferenciar maiúsculas/minúsculas
-    }
-    if (academic_year) {
-      where.academic_year = academic_year;
-    }
-    if (teacherId) {
-      where.teacherId = teacherId;
-    }
+    if (name) where.name = { [Op.iLike]: `%${name}%` };
+    if (academic_year) where.academic_year = academic_year;
+    if (teacherId) where.teacherId = teacherId;
 
-    // 2. Paginação
     const offset = (page - 1) * limit;
 
     const { rows, count } = await this.classModel.findAndCountAll({
@@ -57,7 +48,16 @@ export class ClassesService {
           as: 'teacher',
           attributes: { exclude: ['password_hash'] },
         },
+        
+        {
+          model: Subject,
+          as: 'subjects',
+          attributes: ['id', 'name', 'code'], // Trazemos dados da matéria
+          through: { attributes: [] } // Ignoramos dados da tabela pivô
+        }
+        
       ],
+      distinct: true, // Importante para contar corretamente com includes N:N
       order: [
         ['academic_year', 'DESC'],
         ['name', 'ASC'],

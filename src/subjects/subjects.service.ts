@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Subject } from './models/subject.model';
@@ -14,37 +14,69 @@ export class SubjectsService {
   ) {}
 
   /**
-   * Gera o próximo código disponível (Ex: DIS001, DIS002)
+   * Gera o próximo código disponível com verificação de colisão
    */
   private async generateNextCode(): Promise<string> {
-    // Busca a última disciplina criada para pegar o último código
+    // 1. Busca o último código cadastrado para ter um ponto de partida
     const lastSubject = await this.subjectModel.findOne({
-      order: [['createdAt', 'DESC']],
+      order: [['code', 'DESC']], // Tenta pegar o maior
       attributes: ['code'],
+      where: {
+        code: { [Op.iLike]: 'DIS%' } // iLike ignora maiúsculas/minúsculas
+      },
+      paranoid: false // Inclui deletados (soft-delete) para evitar recriar códigos antigos
     });
 
     let nextNumber = 1;
 
     if (lastSubject && lastSubject.code) {
-      // Extrai o número do código (ex: de DIS005 pega 5)
-      const matches = lastSubject.code.match(/DIS(\d+)/);
+      const matches = lastSubject.code.match(/DIS(\d+)/i);
       if (matches && matches[1]) {
         nextNumber = parseInt(matches[1], 10) + 1;
       }
     }
 
-    // Formata para ter 3 dígitos (ex: 1 -> "001")
-    return `DIS${nextNumber.toString().padStart(3, '0')}`;
+    // 2. Loop de Segurança (Blindagem)
+    // Se o cálculo acima sugerir "DIS002", mas "DIS002" já existir (por qualquer motivo),
+    // o loop vai tentar "DIS003", "DIS004" até achar um livre.
+    let candidateCode = `DIS${nextNumber.toString().padStart(3, '0')}`;
+    
+    while (true) {
+      const existing = await this.subjectModel.count({
+        where: { code: candidateCode },
+        paranoid: false 
+      });
+
+      if (existing === 0) {
+        // Código está livre!
+        break;
+      }
+
+      // Código ocupado, incrementa e tenta o próximo
+      nextNumber++;
+      candidateCode = `DIS${nextNumber.toString().padStart(3, '0')}`;
+    }
+
+    return candidateCode;
   }
 
   async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
     const code = await this.generateNextCode();
     
-    // Mescla o DTO com o código gerado
-    return this.subjectModel.create({
-      ...createSubjectDto,
-      code,
-    });
+    try {
+      return await this.subjectModel.create({
+        ...createSubjectDto,
+        code,
+      });
+    } catch (error: any) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        const fields = error.errors?.map((e: any) => e.path).join(', ');
+        throw new ConflictException(`Conflito: Já existe um registro com este dado único (${fields}).`);
+      }
+      
+      console.error('Erro ao criar disciplina:', error);
+      throw new InternalServerErrorException('Erro ao salvar disciplina.');
+    }
   }
 
   async findAll(filterDto: FilterSubjectDto) {
@@ -68,7 +100,7 @@ export class SubjectsService {
       where,
       limit,
       offset,
-      order: [['code', 'ASC']], // Ordenar por código fica mais organizado agora
+      order: [['code', 'ASC']], 
     });
 
     return {
@@ -92,7 +124,14 @@ export class SubjectsService {
     updateSubjectDto: UpdateSubjectDto,
   ): Promise<Subject> {
     const subject = await this.findOne(id);
-    return subject.update(updateSubjectDto);
+    try {
+        return await subject.update(updateSubjectDto);
+    } catch (error: any) {
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            throw new ConflictException('Conflito de dados: Nome ou Código já existem.');
+        }
+        throw error;
+    }
   }
 
   async remove(id: string): Promise<{ message: string }> {
