@@ -20,7 +20,6 @@ import { RolesGuard } from 'src/common/guards/roles/roles.guard';
 import { Roles } from 'src/common/decorators/roles/roles.decorator';
 import { UserRole } from 'src/users/models/user.model';
 import { ReportsService } from './reports.service';
-import { FilterFinancialReportDto } from './dto/filter-financial-report.dto';
 
 @ApiTags('Relatórios Acadêmicos e Financeiros')
 @ApiBearerAuth()
@@ -43,11 +42,9 @@ export class ReportsController {
     @Param('studentId', ParseUUIDPipe) studentId: string,
     @Request() req,
   ) {
-    // A regra de permissão interna (Aluno só vê o próprio histórico)
     if (req.user.role === UserRole.STUDENT && req.user.userId !== studentId) {
       throw new Error('Você só pode ver seu próprio histórico');
     }
-
     return this.reportsService.getStudentHistory(studentId);
   }
 
@@ -60,12 +57,26 @@ export class ReportsController {
     type: 'string',
     format: 'uuid',
   })
+  // --- ADICIONADO: Documentação do filtro de disciplina ---
+  @ApiQuery({
+    name: 'subjectId',
+    description: 'ID da disciplina para filtrar (opcional)',
+    required: false,
+    type: 'string',
+    format: 'uuid',
+  })
+  // --------------------------------------------------------
   @ApiResponse({
     status: 200,
     description: 'Relatório de desempenho gerado com sucesso',
   })
-  getClassPerformance(@Param('classId', ParseUUIDPipe) classId: string) {
-    return this.reportsService.getClassPerformance(classId);
+  getClassPerformance(
+    @Param('classId', ParseUUIDPipe) classId: string,
+    // --- ADICIONADO: Recebe o parâmetro da URL ---
+    @Query('subjectId') subjectId?: string, 
+  ) {
+    // Repassa para o serviço
+    return this.reportsService.getClassPerformance(classId, subjectId);
   }
 
   @Get('financial/revenue')

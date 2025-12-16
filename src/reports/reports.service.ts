@@ -94,8 +94,10 @@ export class ReportsService {
     };
   }
 
+  // CORREÇÃO: Adicionado parâmetro subjectId opcional
   async getClassPerformance(
     classId: string,
+    subjectId?: string, 
   ): Promise<ClassPerformanceResponse> {
     const classInstance = await this.classModel.findByPk(classId, {
       include: [
@@ -113,17 +115,26 @@ export class ReportsService {
 
     const performanceData = await Promise.all(
       classInstance.students.map(async (student) => {
+        
+        // --- FILTROS DINÂMICOS ---
+        const gradeWhere: any = { studentId: student.id };
+        const attendanceWhere: any = { studentId: student.id, classId };
+
+        // Se subjectId foi informado, filtra notas e frequência por disciplina
+        if (subjectId) {
+          gradeWhere.subjectId = subjectId;
+          attendanceWhere.subjectId = subjectId;
+        }
+
         const grades = await this.gradeModel.findAll({
-          where: { studentId: student.id },
+          where: gradeWhere,
           attributes: ['value'],
         });
 
         const attendances = await this.attendanceModel.findAll({
-          where: {
-            studentId: student.id,
-            classId,
-          },
+          where: attendanceWhere,
         });
+        // -------------------------
 
         const averageGrade =
           grades.length > 0
@@ -200,7 +211,6 @@ export class ReportsService {
     const collectionRate =
       totalInvoices > 0 ? (paidInvoices / totalInvoices) * 100 : 0;
 
-    // Simular dados mensais (em produção, você faria uma consulta agrupada por mês)
     const monthlyData = [
       {
         month: '2024-01',
@@ -234,15 +244,11 @@ export class ReportsService {
     };
   }
 
-  /**
-   * Endpoint de Relatório Financeiro: Inadimplência
-   * (Resolve o erro: Property 'getDefaultsReport' does not exist)
-   */
   async getDefaultsReport() {
     return this.invoiceModel.findAll({
       where: {
         status: InvoiceStatus.PENDING,
-        dueDate: { [Op.lt]: new Date() }, // Vencidas (data de vencimento < data atual)
+        dueDate: { [Op.lt]: new Date() },
       },
       include: [
         {

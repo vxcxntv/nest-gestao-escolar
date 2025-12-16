@@ -231,64 +231,54 @@ export class AttendancesService {
   /**
    * Resumo de frequência de todos os alunos de uma turma
    */
-  async getClassAttendanceSummary(classId: string): Promise<any> {
+  async getClassAttendanceSummary(classId: string, subjectId?: string): Promise<any> {
     const classInstance = await this.classModel.findByPk(classId, {
-      include: [
-        {
-          model: User,
-          as: 'students',
-          attributes: ['id', 'name', 'email'],
-        },
-      ],
+      include: [{ model: User, as: 'students', attributes: ['id', 'name', 'email'] }],
     });
 
-    if (!classInstance) {
-      throw new NotFoundException(`Turma com ID ${classId} não encontrada`);
-    }
+    if (!classInstance) throw new NotFoundException(`Turma com ID ${classId} não encontrada`);
 
     const summary = await Promise.all(
       classInstance.students.map(async (student) => {
+        
+        // 1. Monta o filtro dinâmico
+        const whereClause: any = {
+          studentId: student.id,
+          classId,
+        };
+
+        // 2. Se tiver disciplina, filtra por ela
+        if (subjectId) {
+          whereClause.subjectId = subjectId;
+        }
+
         const attendances = await this.attendanceModel.findAll({
-          where: {
-            studentId: student.id,
-            classId,
-          },
+          where: whereClause,
         });
 
         const totalAttendances = attendances.length;
         const presentAttendances = attendances.filter(
           (a) => a.status === AttendanceStatus.PRESENT,
         ).length;
-        const absentAttendances = totalAttendances - presentAttendances;
-        const attendanceRate =
-          totalAttendances > 0
+        
+        const attendanceRate = totalAttendances > 0
             ? (presentAttendances / totalAttendances) * 100
             : 0;
 
         return {
-          student: {
-            id: student.id,
-            name: student.name,
-            email: student.email,
-          },
+          student: { id: student.id, name: student.name, email: student.email },
           totalAttendances,
           presentAttendances,
-          absentAttendances,
+          absentAttendances: totalAttendances - presentAttendances,
           attendanceRate: Number(attendanceRate.toFixed(2)),
         };
       }),
     );
 
-    const classTotalAttendances = summary.reduce(
-      (sum, student) => sum + student.totalAttendances,
-      0,
-    );
-    const classPresentAttendances = summary.reduce(
-      (sum, student) => sum + student.presentAttendances,
-      0,
-    );
-    const classAttendanceRate =
-      classTotalAttendances > 0
+    // Cálculos Gerais da Turma (baseado no filtro atual)
+    const classTotalAttendances = summary.reduce((sum, s) => sum + s.totalAttendances, 0);
+    const classPresentAttendances = summary.reduce((sum, s) => sum + s.presentAttendances, 0);
+    const classAttendanceRate = classTotalAttendances > 0
         ? (classPresentAttendances / classTotalAttendances) * 100
         : 0;
 
@@ -298,12 +288,16 @@ export class AttendancesService {
         name: classInstance.name,
         academicYear: classInstance.academic_year,
       },
+      // Retorna o filtro aplicado para confirmação no front
+      filter: {
+        subjectId: subjectId || null
+      },
       summary: {
         totalStudents: summary.length,
         classAttendanceRate: Number(classAttendanceRate.toFixed(2)),
-        totalAttendances: classTotalAttendances,
-        presentAttendances: classPresentAttendances,
-        absentAttendances: classTotalAttendances - classPresentAttendances,
+        totalAttendances: classTotalAttendances, // Aulas dadas * alunos
+        presentAvg: Math.round(classPresentAttendances / (summary.length || 1)), // Média de presença por aluno
+        absentAvg: Math.round((classTotalAttendances - classPresentAttendances) / (summary.length || 1)), // Média de falta por aluno
       },
       students: summary,
     };
