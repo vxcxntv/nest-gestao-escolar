@@ -16,6 +16,8 @@ import { Enrollment } from 'src/classes/models/enrollment.model';
 import { Class } from 'src/classes/models/class.model';
 import { Grade } from 'src/grades/models/grade.model';
 import { Subject } from 'src/subjects/models/subject.model';
+import { Attendance } from 'src/attendances/models/attendance.model';
+import { Invoice } from 'src/invoices/models/invoice.model';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +28,12 @@ export class UsersService {
     private enrollmentModel: typeof Enrollment, 
     @InjectModel(Class)
     private classModel: typeof Class,
+    @InjectModel(Grade) 
+    private gradeModel: typeof Grade,
+    @InjectModel(Attendance) 
+    private attendanceModel: typeof Attendance,
+    @InjectModel(Invoice) 
+    private invoiceModel: typeof Invoice,
   ) {}
 
   // Criação de usuário com hash de senha
@@ -194,9 +202,37 @@ export class UsersService {
   }
 
   // Remover usuário
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string }> {
     const user = await this.findOne(id);
-    await user.destroy();
+
+    // Validação de segurança: se os modelos não foram injetados, lança erro antes de quebrar
+    if (!this.gradeModel || !this.attendanceModel || !this.invoiceModel) {
+        console.error("ERRO CRÍTICO: Modelos não injetados no UsersService. Verifique o Module e o Constructor.");
+        throw new Error("Erro interno: Falha na injeção de dependências para exclusão.");
+    }
+
+    try {
+        // 1. Remove Notas
+        await this.gradeModel.destroy({ where: { studentId: id } });
+
+        // 2. Remove Frequências
+        await this.attendanceModel.destroy({ where: { studentId: id } });
+
+        // 3. Remove Faturas
+        await this.invoiceModel.destroy({ where: { studentId: id } });
+
+        // 4. Desvincula da Turma (se o aluno tiver o campo classId)
+        // Se o modelo User tiver 'classId', o destroy abaixo já resolve. 
+        // Se for tabela pivot, precisaria limpar lá, mas geralmente User pertence a Class.
+
+        // 5. Remove o Usuário
+        await user.destroy();
+        
+        return { message: 'Aluno e todos os seus dados removidos com sucesso.' };
+    } catch (error) {
+        console.error("Erro ao deletar aluno:", error);
+        throw new Error(`Não foi possível remover o aluno: ${error.message}`);
+    }
   }
 
   // Alterar senha do usuário logado
