@@ -33,6 +33,15 @@ export class AttendancesService {
     try {
       const { date, classId, subjectId, presences } = createAttendanceDto;
 
+      await this.attendanceModel.destroy({
+        where: {
+          date,
+          classId,
+          subjectId
+        },
+        transaction
+      });
+
       // Buscar nome da turma e disciplina para a mensagem
       const classInstance = await this.classModel.findByPk(classId, {
         attributes: ['name']
@@ -50,6 +59,7 @@ export class AttendancesService {
         subjectId,
         studentId: presence.studentId,
         status: presence.status,
+        notes: presence.notes,
       }));
 
       await this.attendanceModel.bulkCreate(recordsToCreate, { transaction });
@@ -59,7 +69,7 @@ export class AttendancesService {
       const absentCount = presences.filter(p => p.status === 'absent').length;
 
       return { 
-        message: `Frequência registrada com sucesso para ${presences.length} alunos na turma ${className} (${subjectName}). Presentes: ${presentCount}, Ausentes: ${absentCount}` 
+        message: `Frequência registrada com sucesso.`
       };
     } catch (error) {
       await transaction.rollback();
@@ -70,7 +80,7 @@ export class AttendancesService {
   async findAll(filterDto: FilterAttendanceDto) {
     const {
       page = 1,
-      limit = 10,
+      limit = 1000,
       classId,
       subjectId,
       studentId,
@@ -83,7 +93,7 @@ export class AttendancesService {
     if (studentId) where.studentId = studentId;
 
     if (dateFrom) {
-      where.date = { [Op.gte]: dateFrom };
+      where.date = dateFrom;
     }
 
     const offset = (page - 1) * limit;
@@ -97,7 +107,7 @@ export class AttendancesService {
         { model: Class, attributes: ['id', 'name'] },
         { model: Subject, attributes: ['id', 'name'] },
       ],
-      order: [['date', 'DESC']],
+      order: [['date', 'DESC'], ['createdAt', 'DESC']],
     });
 
     return {

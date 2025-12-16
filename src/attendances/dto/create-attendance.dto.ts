@@ -4,6 +4,8 @@ import {
   IsDateString,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
+  IsString,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
@@ -25,6 +27,15 @@ class StudentAttendanceDto {
   @IsEnum(AttendanceStatus)
   @IsNotEmpty()
   status: AttendanceStatus;
+
+  @ApiProperty({
+    description: 'Observações sobre a presença (ex: Atrasado, Saiu mais cedo).',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
 }
 
 // DTO principal para a requisição em lote
@@ -54,7 +65,7 @@ export class CreateAttendanceDto {
     type: [StudentAttendanceDto],
   })
   @IsArray()
-  @ValidateNested({ each: true }) // Valida cada objeto dentro do array
-  @Type(() => StudentAttendanceDto) // Necessário para o ValidateNested funcionar
+  @ValidateNested({ each: true })
+  @Type(() => StudentAttendanceDto)
   presences: StudentAttendanceDto[];
 }

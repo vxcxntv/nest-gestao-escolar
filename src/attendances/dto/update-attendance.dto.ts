@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsDateString } from 'class-validator';
+import { IsEnum, IsOptional, IsDateString, IsString } from 'class-validator';
 import { AttendanceStatus } from '../models/attendance.model';
 
 export class UpdateAttendanceDto {
@@ -21,4 +21,13 @@ export class UpdateAttendanceDto {
   @IsDateString()
   @IsOptional()
   date?: string;
+
+  @ApiProperty({
+    description: 'Observações',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
 }
